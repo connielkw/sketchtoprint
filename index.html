@@ -3,423 +3,535 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sketch → B/W + SVG (Frontend Preview)</title>
+  <title>SketchToPrint — Tile Editor (Konva Edge Snap)</title>
   <style>
-    :root {
-      --bg: #0b0d10;
-      --panel: #11151b;
-      --text: #e7eef7;
-      --muted: #9db0c5;
-      --accent: #4ea1ff;
-      --danger: #ff5c5c;
-      --border: #223041;
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      padding: 0; margin: 0;
-      background: var(--bg); color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
-    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    .header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    .title { font-size: 18px; font-weight: 800; }
-    .subtitle { font-size: 13px; color: var(--muted); line-height: 1.35; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width: 900px) {
-      .grid { grid-template-columns: 380px 1fr; align-items: start; }
-    }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .btn {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: #0f141b;
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .btnPrimary {
-      border-color: rgba(78,161,255,0.7);
-      background: rgba(78,161,255,0.14);
-    }
-    .btn:disabled { cursor: not-allowed; opacity: 0.55; }
-    .label { font-size: 12px; color: var(--muted); }
-    .input {
-      width: 100%;
-      padding: 10px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: #0f141b;
-      color: var(--text);
-    }
-    .slider { width: 100%; }
-    .kv {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .previewGrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width: 900px) { .previewGrid { grid-template-columns: repeat(3, 1fr); } }
-    .previewBox {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      background: #0a0f14;
-    }
-    .previewHeader {
-      padding: 10px 10px;
-      border-bottom: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .previewBody {
-      padding: 10px;
-      min-height: 260px;
-      display: grid;
-      place-items: center;
-    }
-    .img { max-width: 100%; max-height: 420px; height: auto; display: block; }
-    .notice { color: var(--muted); font-size: 12px; line-height: 1.35; }
-    .badgeWarn { color: #ffd36b; font-weight: 800; font-size: 11px; }
-    .badgeOk { color: #6bffb3; font-weight: 800; font-size: 11px; }
-    .danger { color: var(--danger); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .svgWrap svg { width: 100%; height: auto; display: block; }
+    :root{--bg:#0b0d10;--panel:#11151b;--text:#e7eef7;--muted:#9db0c5;--border:#223041;--accent:#4ea1ff;--danger:#ff5c5c;}
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+    .app{display:grid;grid-template-columns: 380px 1fr; min-height:100vh;}
+    @media (max-width: 980px){ .app{grid-template-columns: 1fr;} }
+    .panel{background:var(--panel);border-right:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:12px;}
+    .title{font-weight:900;font-size:16px;}
+    .subtitle{color:var(--muted);font-size:12px;line-height:1.35;}
+    .card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0f141b;}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    label{font-size:12px;color:var(--muted);}
+    select,button,input{border:1px solid var(--border);background:#0b0f14;color:var(--text);padding:10px 10px;border-radius:10px;font-weight:800;}
+    button{cursor:pointer;}
+    button:disabled{opacity:.55;cursor:not-allowed;}
+    .btnPrimary{border-color: rgba(78,161,255,.7); background: rgba(78,161,255,.14);}
+    .muted{color:var(--muted);font-size:12px;line-height:1.35;}
+    .danger{color:var(--danger);font-weight:900;}
+    .palette{display:grid;grid-template-columns: repeat(4, 1fr);gap:8px;margin-top:8px;}
+    .swatch{height:34px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.9);cursor:pointer;}
+    .swatch.active{outline:2px solid var(--accent);}
+    .canvasWrap{position:relative;overflow:hidden;}
+    #stageContainer{width:100%;height:100%;min-height: 560px;}
+    .topBar{position:absolute;left:12px;right:12px;top:12px;background: rgba(17,21,27,.88);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;backdrop-filter: blur(6px);}
+    .kbd{font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:8px;color:var(--muted);}
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="title">Sketch → B/W + SVG (Frontend Preview)</div>
+<div class="app">
+  <aside class="panel">
+    <div>
+      <div class="title">SketchToPrint — Tile Editor (Edge Snap)</div>
       <div class="subtitle">
-        Upload a sketch photo and preview a black/white output + a mock SVG. (Real app will run HEIC decode + OpenCV + potrace on the server.)
-        <div class="notice" style="margin-top:6px;">
-          Session (local only): <span id="sessionId" class="mono"></span>
-        </div>
+        Drag tiles. They snap edge-to-edge (magnet style). <b>No overlap</b>. Max <b>4 colors</b>. Export SVG.
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="row" style="justify-content:space-between;">
-          <div>
-            <div style="font-weight:800; margin-bottom:4px;">Upload</div>
-            <div class="label">Pick a photo of a hand sketch (JPG/PNG/HEIC).</div>
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <input id="fileInput" class="input" type="file" accept="image/*,.heic,.heif" />
-          <div id="heicNote" class="notice" style="margin-top:8px; display:none;">
-            <span class="badgeWarn">NOTE:</span>
-            HEIC may not preview in some browsers; the real app will convert HEIC server-side and show a PNG preview.
-          </div>
-        </div>
-
-        <div style="margin-top:12px; display:grid; gap:10px;">
-          <div>
-            <div class="kv">
-              <div class="label">Threshold: <span id="thresholdVal">165</span></div>
-              <div class="label">darker → black</div>
-            </div>
-            <input id="threshold" class="slider" type="range" min="0" max="255" value="165" disabled />
-          </div>
-
-          <label class="row" style="gap:8px;">
-            <input id="invert" type="checkbox" disabled />
-            <span class="label">Invert (useful if background becomes black)</span>
-          </label>
-
-          <div>
-            <div class="kv">
-              <div class="label">Preview max dimension: <span id="downscaleVal">1400</span>px</div>
-              <div class="label">speed vs detail</div>
-            </div>
-            <input id="downscale" class="slider" type="range" min="600" max="2400" step="50" value="1400" disabled />
-          </div>
-
-          <div class="row">
-            <button id="processBtn" class="btn btnPrimary" disabled>Process (mock)</button>
-            <button id="downloadBtn" class="btn" disabled>Download SVG (mock)</button>
-          </div>
-
-          <div id="error" class="notice danger" style="display:none;"></div>
-
-          <div class="notice">
-            <span class="badgeOk">NEXT:</span>
-            Replace this mock processing with: Supabase Storage upload → job row → Cloud Run worker → store preview PNG + potrace SVG → signed URLs.
-          </div>
-        </div>
+    <div class="card">
+      <div style="font-weight:900;">Palette (max 4)</div>
+      <div class="muted">Pick active color; apply to selected.</div>
+      <div class="palette" id="palette"></div>
+      <div class="row" style="margin-top:10px;">
+        <input id="newColorInput" type="color" value="#F7E600"/>
+        <button id="addColorBtn">Add/Use</button>
+        <button id="applyColorBtn">Apply to selected</button>
       </div>
+      <div id="paletteMsg" class="muted" style="margin-top:8px;"></div>
+    </div>
 
-      <div class="card">
-        <div style="font-weight:800; margin-bottom:10px;">Preview</div>
-        <div class="previewGrid">
-          <div class="previewBox">
-            <div class="previewHeader">
-              <span>Original</span>
-              <span id="fileName" class="label"></span>
-            </div>
-            <div class="previewBody">
-              <img id="originalImg" class="img" alt="Original upload preview" style="display:none;" />
-              <div id="originalEmpty" class="notice">Upload an image to preview.</div>
-            </div>
-          </div>
-
-          <div class="previewBox">
-            <div class="previewHeader">
-              <span>B/W PNG (mock)</span>
-              <span class="label">threshold</span>
-            </div>
-            <div class="previewBody">
-              <img id="bwImg" class="img" alt="Black and white preview" style="display:none;" />
-              <div id="bwEmpty" class="notice">Click “Process (mock)”.</div>
-            </div>
-          </div>
-
-          <div class="previewBox">
-            <div class="previewHeader">
-              <span>SVG (mock)</span>
-              <span class="label">placeholder</span>
-            </div>
-            <div class="previewBody">
-              <div id="svgWrap" class="svgWrap" style="width:100%; display:none;"></div>
-              <div id="svgEmpty" class="notice">SVG will appear here after processing.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="notice" style="margin-top:10px;">
-          HEIC note: if the “Original” pane fails, that’s expected in some browsers. In the real system, Cloud Run will convert HEIC → PNG.
-        </div>
+    <div class="card">
+      <div style="font-weight:900;">Shape library</div>
+      <div class="muted">Click to add at center. Rotate snaps per tile type.</div>
+      <div class="row" style="margin-top:10px;">
+        <button id="addSquareBtn">+ Square</button>
+        <button id="addRectBtn">+ Rectangle (2×1)</button>
+        <button id="addHexBtn">+ Hexagon</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button id="addTri60Btn">+ Triangle (60°)</button>
+        <button id="addTri45Btn">+ Triangle (45°)</button>
+        <button id="addTri30Btn">+ Triangle (30° tip)</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        Tip: keep “Snap grid” off for mixed-system builds; edge snap is the correct snapping.
       </div>
     </div>
-  </div>
 
-  <script>
-    function uuidv4() {
-      if (crypto && crypto.randomUUID) return crypto.randomUUID();
-      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    }
+    <div class="card">
+      <div style="font-weight:900;">Edit</div>
+      <div class="row" style="margin-top:10px;">
+        <button id="rotateLeftBtn">Rotate ⟲</button>
+        <button id="rotateRightBtn">Rotate ⟳</button>
+        <button id="deleteBtn" style="border-color: rgba(255,92,92,.5); background: rgba(255,92,92,.1);">Delete</button>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <label class="row" style="gap:8px;"><input id="snapEdges" type="checkbox" checked/> Snap edges</label>
+        <label class="row" style="gap:8px;"><input id="snapGrid" type="checkbox"/> Snap grid (fallback)</label>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        Shortcuts: <span class="kbd">Del</span> delete, <span class="kbd">[</span>/<span class="kbd">]</span> rotate, <span class="kbd">Esc</span> deselect
+      </div>
+    </div>
 
-    const sessionKey = "sketch_to_svg_session_id";
-    let sessionId = localStorage.getItem(sessionKey);
-    if (!sessionId) {
-      sessionId = uuidv4();
-      localStorage.setItem(sessionKey, sessionId);
-    }
-    document.getElementById("sessionId").textContent = sessionId;
+    <div class="card">
+      <div style="font-weight:900;">Export</div>
+      <div class="row" style="margin-top:10px;">
+        <button id="exportSvgBtn" class="btnPrimary" style="width:100%;">Download SVG</button>
+        <button id="clearBtn" style="width:100%;">Clear canvas</button>
+      </div>
+      <div class="muted" style="margin-top:8px;">Export is clean polygons with fills + stroke.</div>
+    </div>
+  </aside>
 
-    let file = null;
-    let originalUrl = "";
-    let bwUrl = "";
-    let svgText = "";
+  <main class="canvasWrap">
+    <div class="topBar">
+      <div class="muted">Edge snap first; grid snap only if edge snap didn’t happen. Overlaps revert automatically.</div>
+    </div>
+    <div id="stageContainer"></div>
+  </main>
+</div>
 
-    const fileInput = document.getElementById("fileInput");
-    const processBtn = document.getElementById("processBtn");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const threshold = document.getElementById("threshold");
-    const thresholdVal = document.getElementById("thresholdVal");
-    const invert = document.getElementById("invert");
-    const downscale = document.getElementById("downscale");
-    const downscaleVal = document.getElementById("downscaleVal");
-    const errorEl = document.getElementById("error");
+<script src="https://unpkg.com/konva@9/konva.min.js"></script>
+<script>
+  // ---------- Config ----------
+  const UNIT = 80;
+  const STROKE = 3;
 
-    const heicNote = document.getElementById("heicNote");
+  const EDGE_SNAP_DIST = 12;
+  const ANGLE_TOL_DEG = 5;
+  const LEN_TOL = 8;
 
-    const fileName = document.getElementById("fileName");
-    const originalImg = document.getElementById("originalImg");
-    const originalEmpty = document.getElementById("originalEmpty");
+  // ---------- Palette ----------
+  const paletteEl = document.getElementById("palette");
+  const paletteMsgEl = document.getElementById("paletteMsg");
+  const newColorInput = document.getElementById("newColorInput");
+  const addColorBtn = document.getElementById("addColorBtn");
+  const applyColorBtn = document.getElementById("applyColorBtn");
 
-    const bwImg = document.getElementById("bwImg");
-    const bwEmpty = document.getElementById("bwEmpty");
+  let palette = ["#F7E600", "#C97B2A", "#2C6BFF", "#26B36B"];
+  let activeColor = palette[0];
 
-    const svgWrap = document.getElementById("svgWrap");
-    const svgEmpty = document.getElementById("svgEmpty");
+  function renderPalette() {
+    paletteEl.innerHTML = "";
+    palette.forEach((c) => {
+      const d = document.createElement("div");
+      d.className = "swatch" + (c === activeColor ? " active" : "");
+      d.style.background = c;
+      d.textContent = c.toUpperCase();
+      d.onclick = () => { activeColor = c; renderPalette(); };
+      paletteEl.appendChild(d);
+    });
+    paletteMsgEl.textContent = `Active: ${activeColor.toUpperCase()} | Colors used: ${palette.length}/4`;
+  }
 
-    function setError(msg) {
-      if (!msg) {
-        errorEl.style.display = "none";
-        errorEl.textContent = "";
-      } else {
-        errorEl.style.display = "block";
-        errorEl.textContent = "Error: " + msg;
+  function addOrUseColor(hex) {
+    hex = hex.toUpperCase();
+    if (!palette.includes(hex)) {
+      if (palette.length >= 4) {
+        paletteMsgEl.innerHTML = `<span class="danger">Palette limit reached (4).</span> Choose an existing color.`;
+        return false;
       }
+      palette.push(hex);
     }
+    activeColor = hex;
+    renderPalette();
+    return true;
+  }
 
-    function resetOutputs() {
-      if (bwUrl) URL.revokeObjectURL(bwUrl);
-      bwUrl = "";
-      bwImg.style.display = "none";
-      bwImg.src = "";
-      bwEmpty.style.display = "block";
+  addColorBtn.onclick = () => addOrUseColor(newColorInput.value);
 
-      svgText = "";
-      svgWrap.style.display = "none";
-      svgWrap.innerHTML = "";
-      svgEmpty.style.display = "block";
+  // ---------- Stage ----------
+  const container = document.getElementById("stageContainer");
+  const stage = new Konva.Stage({ container: "stageContainer", width: container.clientWidth, height: Math.max(560, window.innerHeight) });
+  const gridLayer = new Konva.Layer();
+  const shapeLayer = new Konva.Layer();
+  const uiLayer = new Konva.Layer();
+  stage.add(gridLayer); stage.add(shapeLayer); stage.add(uiLayer);
 
-      downloadBtn.disabled = true;
+  function resizeStage(){
+    stage.width(container.clientWidth);
+    stage.height(Math.max(560, window.innerHeight));
+    drawGrid();
+    stage.draw();
+  }
+  window.addEventListener("resize", resizeStage);
+
+  // ---------- Grid ----------
+  const snapGridEl = document.getElementById("snapGrid");
+  const snapEdgesEl = document.getElementById("snapEdges");
+
+  function drawGrid(){
+    gridLayer.destroyChildren();
+    const step = UNIT/2;
+    const w = stage.width(), h = stage.height();
+    const color = "rgba(34,48,65,0.55)";
+    for(let x=0;x<w;x+=step) gridLayer.add(new Konva.Line({points:[x,0,x,h], stroke:color, strokeWidth:1}));
+    for(let y=0;y<h;y+=step) gridLayer.add(new Konva.Line({points:[0,y,w,y], stroke:color, strokeWidth:1}));
+    gridLayer.draw();
+  }
+  drawGrid();
+
+  // ---------- Selection ----------
+  const transformer = new Konva.Transformer({ rotateEnabled:false, resizeEnabled:false, borderStroke:"rgba(78,161,255,.9)", borderStrokeWidth:2 });
+  uiLayer.add(transformer);
+
+  let selected = null;
+  function select(node){ selected = node; transformer.nodes(node?[node]:[]); uiLayer.draw(); }
+  stage.on("mousedown touchstart", (e)=>{ if(e.target===stage) select(null); });
+
+  // ---------- Math helpers ----------
+  function degToRad(d){ return d*Math.PI/180; }
+  function radToDeg(r){ return r*180/Math.PI; }
+  function normAngle(a){ return ((a%360)+360)%360; }
+  function snapAngle(angle, step){
+    const a = normAngle(angle);
+    return (Math.round(a/step)*step)%360;
+  }
+  function angleDiffDeg(a,b){
+    let d = Math.abs(normAngle(a)-normAngle(b));
+    if(d>180) d = 360-d;
+    return d;
+  }
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+  function snapToGrid(pos){
+    const step = UNIT/2;
+    return { x: Math.round(pos.x/step)*step, y: Math.round(pos.y/step)*step };
+  }
+
+  // ---------- Canonical polygon points (local coords, centered) ----------
+  function ptsSquare(){
+    const s=UNIT;
+    return [{x:-s/2,y:-s/2},{x:s/2,y:-s/2},{x:s/2,y:s/2},{x:-s/2,y:s/2}];
+  }
+  function ptsRect(){
+    const w=UNIT*2, h=UNIT;
+    return [{x:-w/2,y:-h/2},{x:w/2,y:-h/2},{x:w/2,y:h/2},{x:-w/2,y:h/2}];
+  }
+  function ptsEquiTri(){
+    const s=UNIT;
+    const h=s*Math.sqrt(3)/2;
+    return [{x:-s/2,y:h/3},{x:s/2,y:h/3},{x:0,y:-2*h/3}];
+  }
+  function ptsRightTri45(){
+    const s=UNIT;
+    const raw=[{x:0,y:0},{x:s,y:0},{x:0,y:s}];
+    const cx=s/3, cy=s/3;
+    return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
+  }
+  function ptsTallIso30(){
+    const base=UNIT;
+    const equal=2*base*Math.sin(degToRad(75));
+    const H=Math.sqrt(equal*equal-(base/2)*(base/2));
+    const raw=[{x:-base/2,y:0},{x:base/2,y:0},{x:0,y:H}];
+    const cx=(raw[0].x+raw[1].x+raw[2].x)/3;
+    const cy=(raw[0].y+raw[1].y+raw[2].y)/3;
+    return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
+  }
+  function ptsHex(){
+    const r=UNIT;
+    const pts=[];
+    for(let i=0;i<6;i++){
+      const a=degToRad(i*60);
+      pts.push({x:r*Math.cos(a), y:r*Math.sin(a)});
     }
+    return pts;
+  }
 
-    function enableControls(enabled) {
-      threshold.disabled = !enabled;
-      invert.disabled = !enabled;
-      downscale.disabled = !enabled;
-      processBtn.disabled = !enabled;
+  function localPtsByType(type){
+    switch(type){
+      case "square": return ptsSquare();
+      case "rect": return ptsRect();
+      case "tri60": return ptsEquiTri();
+      case "tri45": return ptsRightTri45();
+      case "tri30": return ptsTallIso30();
+      case "hex": return ptsHex();
+      default: return [];
     }
+  }
 
-    function isHeic(f) {
-      if (!f) return false;
-      const n = (f.name || "").toLowerCase();
-      return n.endsWith(".heic") || n.endsWith(".heif") || f.type === "image/heic" || f.type === "image/heif";
+  function rotationStepByType(type){
+    switch(type){
+      case "square":
+      case "rect": return 90;
+      case "tri60":
+      case "hex": return 60;
+      case "tri45": return 45;
+      case "tri30": return 30;
+      default: return 15;
     }
+  }
 
-    fileInput.addEventListener("change", () => {
-      setError("");
-      resetOutputs();
+  // ---------- World transform ----------
+  function transformPoint(pt, node){
+    const a = degToRad(node.rotation());
+    const cos=Math.cos(a), sin=Math.sin(a);
+    return { x: pt.x*cos - pt.y*sin + node.x(), y: pt.x*sin + pt.y*cos + node.y() };
+  }
 
-      const f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
-      file = f;
-      fileName.textContent = f ? f.name : "";
-
-      heicNote.style.display = isHeic(f) ? "block" : "none";
-
-      if (originalUrl) URL.revokeObjectURL(originalUrl);
-      originalUrl = "";
-
-      if (!f) {
-        originalImg.style.display = "none";
-        originalImg.src = "";
-        originalEmpty.style.display = "block";
-        enableControls(false);
-        return;
-      }
-
-      originalUrl = URL.createObjectURL(f);
-      originalImg.src = originalUrl;
-      originalImg.style.display = "block";
-      originalEmpty.style.display = "none";
-
-      enableControls(true);
-    });
-
-    threshold.addEventListener("input", () => {
-      thresholdVal.textContent = threshold.value;
-    });
-    downscale.addEventListener("input", () => {
-      downscaleVal.textContent = downscale.value;
-    });
-
-    function loadImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("Failed to load image (HEIC may not be supported in this browser)."));
-        img.src = url;
-      });
+  function edgesWorld(node){
+    const pts = localPtsByType(node.getAttr("tileType")).map(p=>transformPoint(p,node));
+    const edges=[];
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i], b=pts[(i+1)%pts.length];
+      const dx=b.x-a.x, dy=b.y-a.y;
+      const len=Math.hypot(dx,dy);
+      const ang=normAngle(radToDeg(Math.atan2(dy,dx)));
+      edges.push({a,b,len,ang, mid:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}});
     }
+    return edges;
+  }
 
-    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  // ---------- Edge snap (endpoint-based) ----------
+  function tryEdgeSnap(movingNode){
+    if(!snapEdgesEl.checked) return false;
 
-    function makeMockSvgFromCanvas(canvas) {
-      const dataUrl = canvas.toDataURL("image/png");
-      const w = canvas.width, h = canvas.height;
-      return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <title>Mock SVG Preview</title>
-  <desc>This SVG embeds the binarized preview image. Replace with potrace SVG from backend.</desc>
-  <image href="${dataUrl}" width="${w}" height="${h}" image-rendering="pixelated" />
-</svg>`;
-    }
+    const myEdges = edgesWorld(movingNode);
+    let best = null;
 
-    async function processMock() {
-      if (!file || !originalUrl) return;
-      setError("");
-      processBtn.disabled = true;
-      processBtn.textContent = "Processing…";
+    shapeLayer.getChildren().forEach((other)=>{
+      if(other===movingNode) return;
+      const otherEdges = edgesWorld(other);
 
-      try {
-        const img = await loadImage(originalUrl);
+      for(const e1 of myEdges){
+        for(const e2 of otherEdges){
+          if(Math.abs(e1.len - e2.len) > LEN_TOL) continue;
 
-        const maxDim = parseInt(downscale.value, 10);
-        const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
-        const w = Math.max(1, Math.round(img.naturalWidth * scale));
-        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+          const opp = normAngle(e2.ang + 180);
+          if(angleDiffDeg(e1.ang, opp) > ANGLE_TOL_DEG) continue;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) throw new Error("Canvas not supported.");
+          const dMid = dist(e1.mid, e2.mid);
+          if(dMid > EDGE_SNAP_DIST) continue;
 
-        ctx.drawImage(img, 0, 0, w, h);
+          const dA = dist(e1.a, e2.b);
+          const dB = dist(e1.b, e2.a);
+          const score = dA + dB;
 
-        const imageData = ctx.getImageData(0, 0, w, h);
-        const d = imageData.data;
-        const t = clamp(parseInt(threshold.value, 10), 0, 255);
-        const inv = invert.checked;
-
-        for (let i = 0; i < d.length; i += 4) {
-          const r = d[i], g = d[i + 1], b = d[i + 2];
-          const gray = (0.299 * r + 0.587 * g + 0.114 * b) | 0;
-          let v = gray < t ? 0 : 255;
-          if (inv) v = 255 - v;
-          d[i] = v; d[i + 1] = v; d[i + 2] = v; d[i + 3] = 255;
+          if(!best || score < best.score){
+            const dx = e2.b.x - e1.a.x;
+            const dy = e2.b.y - e1.a.y;
+            best = { dx, dy, score };
+          }
         }
-        ctx.putImageData(imageData, 0, 0);
-
-        const blob = await new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
-        if (!blob) throw new Error("Failed to create PNG preview.");
-
-        if (bwUrl) URL.revokeObjectURL(bwUrl);
-        bwUrl = URL.createObjectURL(blob);
-
-        bwImg.src = bwUrl;
-        bwImg.style.display = "block";
-        bwEmpty.style.display = "none";
-
-        svgText = makeMockSvgFromCanvas(canvas);
-        svgWrap.innerHTML = svgText;
-        svgWrap.style.display = "block";
-        svgEmpty.style.display = "none";
-
-        downloadBtn.disabled = false;
-      } catch (e) {
-        setError(e && e.message ? e.message : "Failed to process image.");
-      } finally {
-        processBtn.textContent = "Process (mock)";
-        processBtn.disabled = !file;
       }
-    }
-
-    processBtn.addEventListener("click", processMock);
-
-    downloadBtn.addEventListener("click", () => {
-      if (!svgText) return;
-      const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "vector.svg";
-      a.click();
-      URL.revokeObjectURL(url);
     });
-  </script>
+
+    if(best){
+      movingNode.position({ x: movingNode.x()+best.dx, y: movingNode.y()+best.dy });
+      return true;
+    }
+    return false;
+  }
+
+  // ---------- No overlap: SAT for convex polygons ----------
+  function polyWorld(node) {
+    const pts = localPtsByType(node.getAttr("tileType"));
+    return pts.map(p => transformPoint(p, node));
+  }
+  function dot(a,b){ return a.x*b.x + a.y*b.y; }
+  function sub(a,b){ return {x:a.x-b.x, y:a.y-b.y}; }
+  function perp(v){ return {x:-v.y, y:v.x}; }
+  function norm(v){
+    const m = Math.hypot(v.x,v.y) || 1;
+    return {x:v.x/m, y:v.y/m};
+  }
+  function project(poly, axis){
+    let min = Infinity, max = -Infinity;
+    for (const p of poly) {
+      const v = dot(p, axis);
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    return {min, max};
+  }
+  function overlap1D(a,b){ return !(a.max < b.min || b.max < a.min); }
+  function axesFor(poly){
+    const axes = [];
+    for (let i=0;i<poly.length;i++){
+      const a = poly[i];
+      const b = poly[(i+1)%poly.length];
+      axes.push(norm(perp(sub(b,a))));
+    }
+    return axes;
+  }
+  function polysIntersectSAT(polyA, polyB){
+    const axes = axesFor(polyA).concat(axesFor(polyB));
+    for (const axis of axes){
+      if (!overlap1D(project(polyA, axis), project(polyB, axis))) return false;
+    }
+    return true;
+  }
+  function intersectsAny(node){
+    const a = polyWorld(node);
+    const others = shapeLayer.getChildren().filter(n => n !== node);
+    for (const o of others){
+      const b = polyWorld(o);
+      if (polysIntersectSAT(a,b)) return true;
+    }
+    return false;
+  }
+
+  function rememberGood(node){
+    node._lastGood = { x: node.x(), y: node.y(), rotation: node.rotation() };
+  }
+  function revertToGood(node){
+    if(node._lastGood){
+      node.position({ x: node._lastGood.x, y: node._lastGood.y });
+      node.rotation(node._lastGood.rotation);
+    }
+  }
+
+  // ---------- Tile factory ----------
+  function makePoly(points, fill){
+    return new Konva.Line({
+      points: points.flatMap(p=>[p.x,p.y]),
+      closed: true,
+      fill,
+      stroke: "rgba(0,0,0,.65)",
+      strokeWidth: STROKE,
+      lineJoin: "round"
+    });
+  }
+
+  function makeTile(type, fill){
+    const pts = localPtsByType(type);
+    const node = makePoly(pts, fill);
+    node.setAttr("tileType", type);
+    node.setAttr("tileFill", fill);
+    node.draggable(true);
+
+    node.on("mousedown touchstart", (e)=>{ e.cancelBubble=true; select(node); });
+
+    node.on("dragmove", ()=>{ /* no grid snap during drag */ });
+
+    node.on("dragend", ()=>{
+      const snapped = tryEdgeSnap(node);
+
+      if(snapGridEl.checked && !snapped){
+        const p = snapToGrid({x: node.x(), y: node.y()});
+        node.position(p);
+      }
+
+      if(intersectsAny(node)){
+        revertToGood(node);
+      } else {
+        rememberGood(node);
+      }
+
+      shapeLayer.draw();
+    });
+
+    return node;
+  }
+
+  function addTile(type){
+    if(!palette.includes(activeColor)){
+      if(!addOrUseColor(activeColor)) return;
+    }
+    const node = makeTile(type, activeColor);
+    node.position({ x: stage.width()/2, y: stage.height()/2 });
+
+    if(type === "hex") node.rotation(30);
+    else node.rotation(0);
+
+    shapeLayer.add(node);
+    shapeLayer.draw();
+    select(node);
+    rememberGood(node);
+  }
+
+  // Buttons
+  document.getElementById("addSquareBtn").onclick = ()=>addTile("square");
+  document.getElementById("addRectBtn").onclick   = ()=>addTile("rect");
+  document.getElementById("addHexBtn").onclick    = ()=>addTile("hex");
+  document.getElementById("addTri60Btn").onclick  = ()=>addTile("tri60");
+  document.getElementById("addTri45Btn").onclick  = ()=>addTile("tri45");
+  document.getElementById("addTri30Btn").onclick  = ()=>addTile("tri30");
+
+  applyColorBtn.onclick = ()=>{
+    if(!selected) return;
+    if(!palette.includes(activeColor)){
+      if(!addOrUseColor(activeColor)) return;
+    }
+    selected.fill(activeColor);
+    selected.setAttr("tileFill", activeColor);
+    shapeLayer.draw();
+  };
+
+  function rotateSelected(dir){
+    if(!selected) return;
+    const type = selected.getAttr("tileType");
+    const step = rotationStepByType(type);
+    selected.rotation(snapAngle(selected.rotation() + dir*step, step));
+
+    tryEdgeSnap(selected);
+    if(intersectsAny(selected)) revertToGood(selected);
+    else rememberGood(selected);
+
+    shapeLayer.draw();
+  }
+
+  document.getElementById("rotateLeftBtn").onclick = ()=>rotateSelected(-1);
+  document.getElementById("rotateRightBtn").onclick= ()=>rotateSelected(1);
+
+  document.getElementById("deleteBtn").onclick = ()=>{
+    if(!selected) return;
+    selected.destroy();
+    select(null);
+    shapeLayer.draw();
+  };
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key==="Escape") select(null);
+    if(e.key==="Delete"||e.key==="Backspace"){
+      if(selected){ selected.destroy(); select(null); shapeLayer.draw(); }
+    }
+    if(e.key==="[") rotateSelected(-1);
+    if(e.key==="]") rotateSelected(1);
+  });
+
+  document.getElementById("clearBtn").onclick = ()=>{
+    shapeLayer.destroyChildren();
+    select(null);
+    shapeLayer.draw();
+  };
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], {type:"image/svg+xml;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url; a.download=filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("exportSvgBtn").onclick = ()=>{
+    const w = stage.width(), h = stage.height();
+    const svgInner = shapeLayer.toSVG();
+    const svg =
+`<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <rect width="100%" height="100%" fill="white"/>
+  ${svgInner}
+</svg>`;
+    downloadText("design.svg", svg);
+  };
+
+  renderPalette();
+  resizeStage();
+</script>
 </body>
 </html>
