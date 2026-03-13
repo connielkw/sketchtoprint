@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,41 +8,90 @@
     :root{--bg:#0b0d10;--panel:#11151b;--text:#e7eef7;--muted:#9db0c5;--border:#223041;--accent:#4ea1ff;--danger:#ff5c5c;}
     *{box-sizing:border-box;}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
-    .app{display:grid;grid-template-columns: 380px 1fr; min-height:100vh;}
+    .app{display:grid;grid-template-columns: 360px 1fr; min-height:100vh;}
     @media (max-width: 980px){ .app{grid-template-columns: 1fr;} }
-    .panel{background:var(--panel);border-right:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:12px;}
-    .title{font-weight:900;font-size:16px;}
-    .subtitle{color:var(--muted);font-size:12px;line-height:1.35;}
-    .card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0f141b;}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .panel{background:var(--panel);border-right:1px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;height:100vh;overflow:hidden;}
+    .titleWrap{padding:4px 2px;}
+    .title{font-weight:900;font-size:15px;margin:2px 0;}
+    .card{border:1px solid var(--border);border-radius:10px;padding:9px;background:#0f141b;}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
     label{font-size:12px;color:var(--muted);}
-    select,button,input{border:1px solid var(--border);background:#0b0f14;color:var(--text);padding:10px 10px;border-radius:10px;font-weight:800;}
+    select,button,input{border:1px solid var(--border);background:#0b0f14;color:var(--text);padding:7px 8px;border-radius:9px;font-weight:800;}
     button{cursor:pointer;}
     button:disabled{opacity:.55;cursor:not-allowed;}
     .btnPrimary{border-color: rgba(78,161,255,.7); background: rgba(78,161,255,.14);}
-    .muted{color:var(--muted);font-size:12px;line-height:1.35;}
+    .muted{color:var(--muted);font-size:11px;line-height:1.3;}
     .danger{color:var(--danger);font-weight:900;}
-    .palette{display:grid;grid-template-columns: repeat(4, 1fr);gap:8px;margin-top:8px;}
-    .swatch{height:34px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.9);cursor:pointer;}
+    .palette{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+    .swatch{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;}
     .swatch.active{outline:2px solid var(--accent);}
-    .canvasWrap{position:relative;overflow:hidden;}
-    #stageContainer{width:100%;height:100%;min-height: 560px;}
-    .topBar{position:absolute;left:12px;right:12px;top:12px;background: rgba(17,21,27,.88);border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;backdrop-filter: blur(6px);}
+    .canvasWrap{position:relative;overflow:hidden;isolation:isolate;height:100vh;}
+    #stageContainer{width:100%;height:100%;position:relative;z-index:1;}
+    .topBar{position:absolute;left:12px;right:12px;top:12px;background:#11151b;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:20;}
+    .zoomBar{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:6px;z-index:20;}
     .kbd{font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:8px;color:var(--muted);}
+    .shapeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;}
+    .shapeBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 3px;font-size:9px;font-weight:700;color:var(--muted);min-width:0;}
+    .shapeBtn svg{display:block;width:44px;height:44px;}
+    .shapeBtn:hover{background:rgba(78,161,255,.1);border-color:rgba(78,161,255,.4);}
   </style>
 </head>
 <body>
 <div class="app">
   <aside class="panel">
-    <div>
+    <div class="titleWrap">
       <div class="title">SketchToPrint — Tile Editor (Edge Snap)</div>
-      <div class="subtitle">
-        Drag tiles. They snap edge-to-edge (magnet style). <b>No overlap</b>. Max <b>4 colors</b>. Export SVG.
+    </div>
+
+    <div class="card">
+      <div style="font-weight:900;">Shape library</div>
+      <div class="muted">Click a shape to add it to the canvas.</div>
+      <div class="shapeGrid">
+        <button id="addSquareBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="8,8 44,8 44,44 8,44" fill="#F7E600" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Square</span>
+        </button>
+        <button id="addRectBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="4,15 48,15 48,37 4,37" fill="#2C6BFF" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Rect 2x1</span>
+        </button>
+        <button id="addHexBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="48,26 37,45 15,45 4,26 15,7 37,7" fill="#26B36B" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Hexagon</span>
+        </button>
+        <button id="addTri60Btn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="7,37 45,37 26,4" fill="#FF6B6B" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Tri 60°</span>
+        </button>
+        <button id="addTri45Btn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="17,43 43,43 17,17" fill="#FF9F1C" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Tri 45°</span>
+        </button>
+        <button id="addTri30Btn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="17,38 35,38 26,3" fill="#7B61FF" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Tri 30°</span>
+        </button>
+        <button id="addTri306090Btn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="19,38 39,38 19,3" fill="#00BCD4" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>30-60-90</span>
+        </button>
+        <button id="addTriISOBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><polygon points="10,44 44,44 10,10" fill="#FF3CAC" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>Tri 1:1:√2</span>
+        </button>
+        <button id="addQuartRoundBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><path d="M 8,44 L 44,44 A 36,36 0 0 0 8,8 Z" fill="#00E5CC" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>¼ Round</span>
+        </button>
+        <button id="addQuartRingBtn" class="shapeBtn">
+          <svg viewBox="0 0 52 52"><path d="M 42,44 A 34,34 0 0 0 8,10 L 8,27 A 17,17 0 0 1 25,44 Z" fill="#FF8C00" stroke="rgba(0,0,0,.45)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span>¼ Ring</span>
+        </button>
       </div>
     </div>
 
     <div class="card">
-      <div style="font-weight:900;">Palette (max 4)</div>
+      <div style="font-weight:900;">Palette (max 8)</div>
       <div class="muted">Pick active color; apply to selected.</div>
       <div class="palette" id="palette"></div>
       <div class="row" style="margin-top:10px;">
@@ -54,44 +103,9 @@
     </div>
 
     <div class="card">
-      <div style="font-weight:900;">Shape library</div>
-      <div class="muted">Click to add at center. Rotate snaps per tile type.</div>
-      <div class="row" style="margin-top:10px;">
-        <button id="addSquareBtn">+ Square</button>
-        <button id="addRectBtn">+ Rectangle (2×1)</button>
-        <button id="addHexBtn">+ Hexagon</button>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <button id="addTri60Btn">+ Triangle (60°)</button>
-        <button id="addTri45Btn">+ Triangle (45°)</button>
-        <button id="addTri30Btn">+ Triangle (30° tip)</button>
-      </div>
-      <div class="muted" style="margin-top:8px;">
-        Tip: keep “Snap grid” off for mixed-system builds; edge snap is the correct snapping.
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-weight:900;">Edit</div>
-      <div class="row" style="margin-top:10px;">
-        <button id="rotateLeftBtn">Rotate ⟲</button>
-        <button id="rotateRightBtn">Rotate ⟳</button>
-        <button id="deleteBtn" style="border-color: rgba(255,92,92,.5); background: rgba(255,92,92,.1);">Delete</button>
-      </div>
-      <div class="row" style="margin-top:10px;">
-        <label class="row" style="gap:8px;"><input id="snapEdges" type="checkbox" checked/> Snap edges</label>
-        <label class="row" style="gap:8px;"><input id="snapGrid" type="checkbox"/> Snap grid (fallback)</label>
-      </div>
-      <div class="muted" style="margin-top:8px;">
-        Shortcuts: <span class="kbd">Del</span> delete, <span class="kbd">[</span>/<span class="kbd">]</span> rotate, <span class="kbd">Esc</span> deselect
-      </div>
-    </div>
-
-    <div class="card">
       <div style="font-weight:900;">Export</div>
       <div class="row" style="margin-top:10px;">
         <button id="exportSvgBtn" class="btnPrimary" style="width:100%;">Download SVG</button>
-        <button id="clearBtn" style="width:100%;">Clear canvas</button>
       </div>
       <div class="muted" style="margin-top:8px;">Export is clean polygons with fills + stroke.</div>
     </div>
@@ -99,7 +113,26 @@
 
   <main class="canvasWrap">
     <div class="topBar">
-      <div class="muted">Edge snap first; grid snap only if edge snap didn’t happen. Overlaps revert automatically.</div>
+      <button id="undoBtn">Undo</button>
+      <button id="redoBtn">Redo</button>
+      <button id="clearBtn" style="border-color:rgba(255,92,92,.5);background:rgba(255,92,92,.1);">Clear</button>
+      <span style="width:1px;height:20px;background:var(--border);display:inline-block;margin:0 2px;"></span>
+      <button id="rotateLeftBtn">⟲</button>
+      <button id="rotateRightBtn">⟳</button>
+      <button id="mirrorHBtn">Mirror H</button>
+      <button id="mirrorVBtn">Mirror V</button>
+      <button id="copyBtn">Copy</button>
+      <button id="deleteBtn" style="border-color:rgba(255,92,92,.5);background:rgba(255,92,92,.1);">Delete</button>
+      <span style="width:1px;height:20px;background:var(--border);display:inline-block;margin:0 2px;"></span>
+      <label class="row" style="gap:6px;font-size:12px;"><input id="snapEdges" type="checkbox" checked/> Snap edges</label>
+      <label class="row" style="gap:6px;font-size:12px;"><input id="snapGrid" type="checkbox"/> Snap grid</label>
+      <label class="row" style="gap:6px;font-size:12px;"><input id="snapLive" type="checkbox" checked/> Live snap</label>
+      <button id="assembleBtn">Assemble</button>
+      <button id="angleMeasureBtn">Angle</button>
+    </div>
+    <div class="zoomBar">
+      <button id="zoomInBtn">＋</button>
+      <button id="zoomOutBtn">－</button>
     </div>
     <div id="stageContainer"></div>
   </main>
@@ -111,9 +144,14 @@
   const UNIT = 80;
   const STROKE = 3;
 
-  const EDGE_SNAP_DIST = 12;
-  const ANGLE_TOL_DEG = 5;
+  const EDGE_SNAP_DIST = 10;
+  const MAGNET_ATTRACT_DIST = 15;
+  const ANGLE_TOL_DEG = 8;
+  const ARC_ANGLE_TOL_DEG = 24;
+  const ARC_SNAP_MIN_DIST = UNIT * 0.9;
   const LEN_TOL = 8;
+  const OVERLAP_EPS = 3.0;
+  const GROUP_ROTATE_STEP = 5;
 
   // ---------- Palette ----------
   const paletteEl = document.getElementById("palette");
@@ -121,9 +159,31 @@
   const newColorInput = document.getElementById("newColorInput");
   const addColorBtn = document.getElementById("addColorBtn");
   const applyColorBtn = document.getElementById("applyColorBtn");
+  const undoBtn = document.getElementById("undoBtn");
+  const redoBtn = document.getElementById("redoBtn");
+  const snapLiveEl = document.getElementById("snapLive");
+  const assembleBtn = document.getElementById("assembleBtn");
+  const angleMeasureBtn = document.getElementById("angleMeasureBtn");
+  const mirrorHBtn = document.getElementById("mirrorHBtn");
+  const mirrorVBtn = document.getElementById("mirrorVBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
 
-  let palette = ["#F7E600", "#C97B2A", "#2C6BFF", "#26B36B"];
-  let activeColor = palette[0];
+  let palette = ["#F7E600", "#2C6BFF", "#26B36B", "#FF6B6B", "#FF9F1C", "#7B61FF"];
+  let activeColor = null;
+  const TYPE_DEFAULT_COLORS = {
+    square: "#F7E600",
+    rect: "#2C6BFF",
+    hex: "#26B36B",
+    tri60: "#FF6B6B",
+    tri45: "#FF9F1C",
+    tri30: "#7B61FF",
+    tri306090: "#00BCD4",
+    triISO: "#FF3CAC",
+    quartRound: "#00E5CC",
+    quartRing: "#FF8C00"
+  };
 
   function renderPalette() {
     paletteEl.innerHTML = "";
@@ -131,22 +191,16 @@
       const d = document.createElement("div");
       d.className = "swatch" + (c === activeColor ? " active" : "");
       d.style.background = c;
-      d.textContent = c.toUpperCase();
+      d.title = c.toUpperCase();
       d.onclick = () => { activeColor = c; renderPalette(); };
       paletteEl.appendChild(d);
     });
-    paletteMsgEl.textContent = `Active: ${activeColor.toUpperCase()} | Colors used: ${palette.length}/4`;
+    paletteMsgEl.textContent = activeColor ? `Active: ${activeColor.toUpperCase()} | ${palette.length} color(s)` : `No color selected | ${palette.length} color(s)`;
   }
 
   function addOrUseColor(hex) {
     hex = hex.toUpperCase();
-    if (!palette.includes(hex)) {
-      if (palette.length >= 4) {
-        paletteMsgEl.innerHTML = `<span class="danger">Palette limit reached (4).</span> Choose an existing color.`;
-        return false;
-      }
-      palette.push(hex);
-    }
+    if (!palette.includes(hex)) palette.push(hex);
     activeColor = hex;
     renderPalette();
     return true;
@@ -162,9 +216,172 @@
   const uiLayer = new Konva.Layer();
   stage.add(gridLayer); stage.add(shapeLayer); stage.add(uiLayer);
 
+  // ---------- Angle measurement (3-click: vertex 鈫?arm1 鈫?arm2) ----------
+  let angleMeasureMode = false;
+  let anglePts = [];        // world-coord points [vertex, arm1end, arm2end]
+  let anglePreview = null;  // live hover preview before click
+  const angleGroup = new Konva.Group({ listening: false });
+  uiLayer.add(angleGroup);
+
+  function pointerToWorld(clientX, clientY){
+    const rect = container.getBoundingClientRect();
+    return { x: (clientX-rect.left-stage.x())/zoomScale,
+             y: (clientY-rect.top -stage.y())/zoomScale };
+  }
+
+  function drawAngleMeasure(){
+    angleGroup.destroyChildren();
+    const pts = anglePts.slice();
+    if(anglePreview && pts.length > 0 && pts.length < 3) pts.push(anglePreview);
+    if(pts.length === 0){ uiLayer.batchDraw(); return; }
+    const p0 = pts[0];
+    // Vertex crosshair
+    const CH = 9;
+    [[p0.x-CH,p0.y,p0.x+CH,p0.y],[p0.x,p0.y-CH,p0.x,p0.y+CH]].forEach(p=>{
+      angleGroup.add(new Konva.Line({ points:p, stroke:"#FF3CAC", strokeWidth:1.5, listening:false }));
+    });
+    if(pts.length >= 2){
+      const p1 = pts[1];
+      angleGroup.add(new Konva.Line({ points:[p0.x,p0.y,p1.x,p1.y], stroke:"#FF3CAC", strokeWidth:2, dash:[5,3], listening:false }));
+      if(anglePts.length >= 2) angleGroup.add(new Konva.Circle({ x:p1.x, y:p1.y, radius:4, fill:"#FF3CAC", listening:false }));
+    }
+    if(pts.length >= 3){
+      const p1=pts[1], p2=pts[2];
+      angleGroup.add(new Konva.Line({ points:[p0.x,p0.y,p2.x,p2.y], stroke:"#FF3CAC", strokeWidth:2, dash:[5,3], listening:false }));
+      if(anglePts.length >= 3) angleGroup.add(new Konva.Circle({ x:p2.x, y:p2.y, radius:4, fill:"#FF3CAC", listening:false }));
+      const ang1 = Math.atan2(p1.y-p0.y, p1.x-p0.x);
+      const ang2 = Math.atan2(p2.y-p0.y, p2.x-p0.x);
+      let diff = (ang2 - ang1 + 2*Math.PI) % (2*Math.PI);
+      if(diff > Math.PI) diff = 2*Math.PI - diff;
+      const deg = Math.round(diff * 1800/Math.PI)/10;  // 0.1掳 precision
+      const arcR = 28;
+      let aStart = ang1, sweep = (ang2-ang1+2*Math.PI)%(2*Math.PI);
+      if(sweep > Math.PI){ aStart = ang2; sweep = 2*Math.PI - sweep; }
+      angleGroup.add(new Konva.Arc({
+        x:p0.x, y:p0.y, innerRadius:arcR, outerRadius:arcR,
+        rotation: aStart*180/Math.PI, angle: sweep*180/Math.PI,
+        stroke:"#FF3CAC", strokeWidth:1.5, listening:false
+      }));
+      const midA = aStart + sweep/2;
+      const labelD = arcR + 18;
+      angleGroup.add(new Konva.Text({
+        x: p0.x + Math.cos(midA)*labelD - 26,
+        y: p0.y + Math.sin(midA)*labelD - 10,
+        text: deg + "\u00b0", fontSize:14, fontStyle:"bold",
+        fill:"#FFE066", width:52, align:"center", listening:false
+      }));
+    }
+    uiLayer.batchDraw();
+  }
+
+  function addAnglePoint(wp){
+    if(anglePts.length >= 3) anglePts = [];
+    anglePts.push(wp);
+    anglePreview = null;
+    drawAngleMeasure();
+  }
+
+  function exitAngleMeasure(){
+    angleMeasureMode = false;
+    angleMeasureBtn.style.borderColor = "";
+    angleMeasureBtn.style.background  = "";
+    anglePts = []; anglePreview = null;
+    drawAngleMeasure();
+    updateCanvasCursor();
+  }
+
+  angleMeasureBtn.onclick = ()=>{
+    angleMeasureMode = !angleMeasureMode;
+    angleMeasureBtn.style.borderColor = angleMeasureMode ? "rgba(78,161,255,.8)" : "";
+    angleMeasureBtn.style.background  = angleMeasureMode ? "rgba(78,161,255,.18)" : "";
+    if(!angleMeasureMode){ anglePts = []; anglePreview = null; drawAngleMeasure(); }
+    updateCanvasCursor();
+    uiLayer.draw();
+  };
+
+  // Capture-phase: intercept left-clicks for measurement before Konva sees them
+  container.addEventListener("mousedown", e => {
+    if(e.button !== 0 || !angleMeasureMode) return;
+    e.stopPropagation();
+    addAnglePoint(pointerToWorld(e.clientX, e.clientY));
+  }, true);
+
+  // Live preview while hovering (before 2nd or 3rd click)
+  container.addEventListener("mousemove", e => {
+    if(!angleMeasureMode || anglePts.length === 0 || anglePts.length >= 3) return;
+    anglePreview = pointerToWorld(e.clientX, e.clientY);
+    drawAngleMeasure();
+  });
+
+  // ---------- Right-click drag to pan canvas ----------
+  let isPanning = false;
+  let panStart = null;
+  let panStartPos = null;
+
+  function updateCanvasCursor(){
+    if(isPanning)           container.style.cursor = "grabbing";
+    else if(angleMeasureMode) container.style.cursor = "crosshair";
+    else                    container.style.cursor = "";
+  }
+
+  container.addEventListener("contextmenu", e => e.preventDefault());
+  container.addEventListener("mousedown", e => {
+    if(e.button !== 2) return;
+    e.preventDefault();
+    isPanning = true;
+    panStart   = { x: e.clientX, y: e.clientY };
+    panStartPos = { x: stage.x(), y: stage.y() };
+    updateCanvasCursor();
+  });
+  window.addEventListener("mousemove", e => {
+    if(!isPanning) return;
+    stage.position({ x: panStartPos.x + e.clientX - panStart.x,
+                     y: panStartPos.y + e.clientY - panStart.y });
+    drawGrid();
+    stage.batchDraw();
+  });
+  window.addEventListener("mouseup", e => {
+    if(e.button !== 2 || !isPanning) return;
+    isPanning = false;
+    updateCanvasCursor();
+  });
+
+  let nextTileId = 1;
+  let historyStack = [];
+  let historyIndex = -1;
+  let applyingHistory = false;
+  let zoomScale = 1;
+
+  const ZOOM_MIN = 0.4;
+  const ZOOM_MAX = 2.5;
+  const ZOOM_STEP = 1.12;
+
+  function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+  function applyZoom(nextScale, anchor){
+    const oldScale = zoomScale;
+    const targetScale = clamp(nextScale, ZOOM_MIN, ZOOM_MAX);
+    if(Math.abs(targetScale - oldScale) < 1e-6) return;
+
+    const a = anchor || { x: stage.width()/2, y: stage.height()/2 };
+    const pointTo = {
+      x: (a.x - stage.x()) / oldScale,
+      y: (a.y - stage.y()) / oldScale
+    };
+
+    zoomScale = targetScale;
+    stage.scale({ x: zoomScale, y: zoomScale });
+    stage.position({
+      x: a.x - pointTo.x * zoomScale,
+      y: a.y - pointTo.y * zoomScale
+    });
+    drawGrid();
+    stage.batchDraw();
+  }
+
   function resizeStage(){
     stage.width(container.clientWidth);
-    stage.height(Math.max(560, window.innerHeight));
+    stage.height(container.clientHeight || window.innerHeight);
     drawGrid();
     stage.draw();
   }
@@ -176,22 +393,112 @@
 
   function drawGrid(){
     gridLayer.destroyChildren();
-    const step = UNIT/2;
-    const w = stage.width(), h = stage.height();
+    const step = UNIT / 2;
     const color = "rgba(34,48,65,0.55)";
-    for(let x=0;x<w;x+=step) gridLayer.add(new Konva.Line({points:[x,0,x,h], stroke:color, strokeWidth:1}));
-    for(let y=0;y<h;y+=step) gridLayer.add(new Konva.Line({points:[0,y,w,y], stroke:color, strokeWidth:1}));
+    // Compute visible world-space bounds
+    const x0 = Math.floor((-stage.x() / zoomScale) / step) * step - step;
+    const y0 = Math.floor((-stage.y() / zoomScale) / step) * step - step;
+    const x1 = ((stage.width()  - stage.x()) / zoomScale) + step;
+    const y1 = ((stage.height() - stage.y()) / zoomScale) + step;
+    for(let x = x0; x <= x1; x += step)
+      gridLayer.add(new Konva.Line({points:[x, y0, x, y1], stroke:color, strokeWidth:1}));
+    for(let y = y0; y <= y1; y += step)
+      gridLayer.add(new Konva.Line({points:[x0, y, x1, y], stroke:color, strokeWidth:1}));
     gridLayer.draw();
   }
   drawGrid();
+
+  stage.on("wheel", (e)=>{
+    e.evt.preventDefault();
+    const p = stage.getPointerPosition();
+    if(!p) return;
+    const dir = e.evt.deltaY > 0 ? -1 : 1;
+    applyZoom(dir > 0 ? zoomScale * ZOOM_STEP : zoomScale / ZOOM_STEP, p);
+  });
+
+  zoomInBtn.onclick = ()=>applyZoom(zoomScale * ZOOM_STEP);
+  zoomOutBtn.onclick = ()=>applyZoom(zoomScale / ZOOM_STEP);
 
   // ---------- Selection ----------
   const transformer = new Konva.Transformer({ rotateEnabled:false, resizeEnabled:false, borderStroke:"rgba(78,161,255,.9)", borderStrokeWidth:2 });
   uiLayer.add(transformer);
 
-  let selected = null;
-  function select(node){ selected = node; transformer.nodes(node?[node]:[]); uiLayer.draw(); }
-  stage.on("mousedown touchstart", (e)=>{ if(e.target===stage) select(null); });
+  const selectionRect = new Konva.Rect({
+    fill: "rgba(78,161,255,.15)",
+    stroke: "rgba(78,161,255,.9)",
+    strokeWidth: 1,
+    visible: false
+  });
+  uiLayer.add(selectionRect);
+
+  let selectedNodes = [];
+  let isSelecting = false;
+  let selectStart = null;
+
+  function setSelection(nodes){
+    selectedNodes = [...new Set(nodes.filter(Boolean))];
+    transformer.nodes(selectedNodes);
+    uiLayer.draw();
+  }
+
+  function clearSelection(){ setSelection([]); }
+
+  function toggleSelection(node){
+    if(selectedNodes.includes(node)){
+      setSelection(selectedNodes.filter(n => n !== node));
+    } else {
+      setSelection(selectedNodes.concat(node));
+    }
+  }
+
+  stage.on("mousedown touchstart", (e)=>{
+    if(e.target !== stage) return;
+    const p = stage.getRelativePointerPosition();
+    if(!p) return;
+    isSelecting = true;
+    selectStart = p;
+    selectionRect.visible(true);
+    selectionRect.position(p);
+    selectionRect.size({ width: 0, height: 0 });
+    uiLayer.batchDraw();
+  });
+
+  stage.on("mousemove touchmove", ()=>{
+    if(!isSelecting || !selectStart) return;
+    const p = stage.getRelativePointerPosition();
+    if(!p) return;
+
+    const x = Math.min(selectStart.x, p.x);
+    const y = Math.min(selectStart.y, p.y);
+    const w = Math.abs(p.x - selectStart.x);
+    const h = Math.abs(p.y - selectStart.y);
+    selectionRect.position({ x, y });
+    selectionRect.size({ width: w, height: h });
+    uiLayer.batchDraw();
+  });
+
+  stage.on("mouseup touchend", (e)=>{
+    if(!isSelecting){
+      if(e.target === stage) clearSelection();
+      return;
+    }
+
+    const rect = selectionRect.getClientRect();
+    const moved = rect.width > 3 || rect.height > 3;
+    selectionRect.visible(false);
+    uiLayer.batchDraw();
+    isSelecting = false;
+
+    if(!moved){
+      if(e.target === stage) clearSelection();
+      return;
+    }
+
+    const picked = shapeLayer.getChildren().filter((node)=>
+      Konva.Util.haveIntersection(rect, node.getClientRect())
+    );
+    setSelection(picked);
+  });
 
   // ---------- Math helpers ----------
   function degToRad(d){ return d*Math.PI/180; }
@@ -207,6 +514,7 @@
     return d;
   }
   function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
 
   function snapToGrid(pos){
     const step = UNIT/2;
@@ -228,18 +536,36 @@
     return [{x:-s/2,y:h/3},{x:s/2,y:h/3},{x:0,y:-2*h/3}];
   }
   function ptsRightTri45(){
-    const s=UNIT;
-    const raw=[{x:0,y:0},{x:s,y:0},{x:0,y:s}];
-    const cx=s/3, cy=s/3;
+    const leg = UNIT / Math.sqrt(2);
+    const raw=[{x:0,y:0},{x:leg,y:0},{x:0,y:leg}];
+    const cx=leg/3, cy=leg/3;
     return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
   }
   function ptsTallIso30(){
-    const base=UNIT;
-    const equal=2*base*Math.sin(degToRad(75));
-    const H=Math.sqrt(equal*equal-(base/2)*(base/2));
+    // Isosceles triangle with side lengths exactly 2, 2, 1 (in UNIT scale).
+    const equal = 2 * UNIT;
+    const base = UNIT;
+    const H = Math.sqrt(equal*equal-(base/2)*(base/2));
     const raw=[{x:-base/2,y:0},{x:base/2,y:0},{x:0,y:H}];
     const cx=(raw[0].x+raw[1].x+raw[2].x)/3;
     const cy=(raw[0].y+raw[1].y+raw[2].y)/3;
+    return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
+  }
+  function ptsTri306090(){
+    // 30-60-90 triangle; hypotenuse = 2*UNIT.
+    // Sides: short leg = UNIT, long leg = UNIT*√3, hypotenuse = 2*UNIT.
+    const short = UNIT;
+    const long  = UNIT * Math.sqrt(3);
+    const raw=[{x:0,y:0},{x:short,y:0},{x:0,y:long}];
+    const cx=(raw[0].x+raw[1].x+raw[2].x)/3;
+    const cy=(raw[0].y+raw[1].y+raw[2].y)/3;
+    return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
+  }
+  function ptsTriISO(){
+    // Right isosceles triangle — legs = UNIT, hypotenuse = UNIT*√2 (sides 1:1:√2)
+    const leg = UNIT;
+    const raw=[{x:0,y:0},{x:leg,y:0},{x:0,y:leg}];
+    const cx=leg/3, cy=leg/3;
     return raw.map(p=>({x:p.x-cx, y:p.y-cy}));
   }
   function ptsHex(){
@@ -251,6 +577,36 @@
     }
     return pts;
   }
+  function ptsQuartRound(){
+    // Quarter-circle sector: right-angle corner + arc, radius = UNIT
+    const r = UNIT;
+    const N = 48;
+    const raw = [{x: 0, y: 0}];
+    for(let i = 0; i <= N; i++){
+      const a = (i / N) * Math.PI / 2;
+      raw.push({x: r * Math.cos(a), y: r * Math.sin(a)});
+    }
+    const cx = raw.reduce((s,p) => s + p.x, 0) / raw.length;
+    const cy = raw.reduce((s,p) => s + p.y, 0) / raw.length;
+    return raw.map(p => ({x: p.x - cx, y: p.y - cy}));
+  }
+  function ptsQuartRing(){
+    // Quarter-ring: inner radius = UNIT, outer radius = 2*UNIT
+    const r1 = UNIT, r2 = 2 * UNIT;
+    const N = 48;
+    const raw = [];
+    for(let i = 0; i <= N; i++){
+      const a = (i / N) * Math.PI / 2;
+      raw.push({x: r2 * Math.cos(a), y: r2 * Math.sin(a)});
+    }
+    for(let i = N; i >= 0; i--){
+      const a = (i / N) * Math.PI / 2;
+      raw.push({x: r1 * Math.cos(a), y: r1 * Math.sin(a)});
+    }
+    const cx = raw.reduce((s,p) => s + p.x, 0) / raw.length;
+    const cy = raw.reduce((s,p) => s + p.y, 0) / raw.length;
+    return raw.map(p => ({x: p.x - cx, y: p.y - cy}));
+  }
 
   function localPtsByType(type){
     switch(type){
@@ -259,22 +615,21 @@
       case "tri60": return ptsEquiTri();
       case "tri45": return ptsRightTri45();
       case "tri30": return ptsTallIso30();
+      case "tri306090": return ptsTri306090();
+      case "triISO": return ptsTriISO();
       case "hex": return ptsHex();
+      case "quartRound": return ptsQuartRound();
+      case "quartRing": return ptsQuartRing();
       default: return [];
     }
   }
 
-  function rotationStepByType(type){
-    switch(type){
-      case "square":
-      case "rect": return 90;
-      case "tri60":
-      case "hex": return 60;
-      case "tri45": return 45;
-      case "tri30": return 30;
-      default: return 15;
-    }
+  function localPtsFor(type, mX, mY){
+    const pts = localPtsByType(type);
+    return pts.map((p)=>({ x: mX === -1 ? -p.x : p.x, y: mY === -1 ? -p.y : p.y }));
   }
+
+  function rotationStepByType(type){ return 5; }
 
   // ---------- World transform ----------
   function transformPoint(pt, node){
@@ -284,7 +639,9 @@
   }
 
   function edgesWorld(node){
-    const pts = localPtsByType(node.getAttr("tileType")).map(p=>transformPoint(p,node));
+    const mX = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+    const mY = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+    const pts = localPtsFor(node.getAttr("tileType"), mX, mY).map(p=>transformPoint(p,node));
     const edges=[];
     for(let i=0;i<pts.length;i++){
       const a=pts[i], b=pts[(i+1)%pts.length];
@@ -296,50 +653,310 @@
     return edges;
   }
 
-  // ---------- Edge snap (endpoint-based) ----------
-  function tryEdgeSnap(movingNode){
-    if(!snapEdgesEl.checked) return false;
+  // Number of arc sub-segments used for arc snapping.
+  // quartRound outer arc (r=UNIT) and quartRing inner arc (r=UNIT) share the same radius,
+  // so each sub-segment chord has identical length → they attract each other correctly.
+  const ARC_SNAP_SEGS = 4;
 
-    const myEdges = edgesWorld(movingNode);
-    let best = null;
+  // Sample ARC_SNAP_SEGS evenly-spaced chord segments from pts[iStart..iEnd].
+  function arcSnapSegsFromPts(pts, iStart, iEnd){
+    const segs = [];
+    const total = iEnd - iStart;
+    for(let i = 0; i < ARC_SNAP_SEGS; i++){
+      const ia = Math.round(iStart + total * (i / ARC_SNAP_SEGS));
+      const ib = Math.round(iStart + total * ((i + 1) / ARC_SNAP_SEGS));
+      segs.push({ a: pts[ia], b: pts[ib], isArc: true });
+    }
+    return segs;
+  }
 
+  // Returns snap edges for curved shapes (straight legs + arc segments tagged isArc:true).
+  // Returns null for polygon types → fall through to per-edge subdivision.
+  function snapEdgesLocalByType(type, mX, mY){
+    if(type !== "quartRound" && type !== "quartRing") return null;
+    const pts = localPtsFor(type, mX, mY);
+    if(type === "quartRound"){
+      // pts: [0]=corner, [1..49]=arc (r=UNIT), index 49 = arc end
+      const arcEnd = pts.length - 1; // 49
+      return [
+        { a: pts[0], b: pts[1] },              // straight leg (0° side)
+        { a: pts[arcEnd], b: pts[0] },         // straight leg (90° side)
+        ...arcSnapSegsFromPts(pts, 1, arcEnd)  // outer arc, r=UNIT
+      ];
+    }
+    // quartRing polygon layout (N=48):
+    //   pts[0..48]  = outer arc from 0°→90° at r=2*UNIT  (49 points)
+    //   pts[49..97] = inner arc from 90°→0° at r=UNIT    (49 points, reversed)
+    // Radial edges connect outer arc end → inner arc start, and inner arc end → outer arc start.
+    return [
+      { a: pts[48], b: pts[49] },             // radial edge at 90° end
+      { a: pts[97], b: pts[0] },              // radial edge at 0° end
+      ...arcSnapSegsFromPts(pts, 49, 97)      // inner arc, r=UNIT (matches quartRound outer arc)
+    ];
+  }
+
+  function edgeSegmentsWorld(node){
+    const type = node.getAttr("tileType");
+    const mX = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+    const mY = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+    const custom = snapEdgesLocalByType(type, mX, mY);
+    if(custom){
+      return custom.map(e=>{
+        const a = transformPoint(e.a, node);
+        const b = transformPoint(e.b, node);
+        const dx = b.x-a.x, dy = b.y-a.y;
+        const len = Math.hypot(dx, dy);
+        const ang = normAngle(radToDeg(Math.atan2(dy, dx)));
+        return { a, b, len, ang, mid:{x:(a.x+b.x)/2, y:(a.y+b.y)/2}, ...(e.isArc?{isArc:true}:{}) };
+      });
+    }
+    const segments = [];
+    const edges = edgesWorld(node);
+
+    for(const edge of edges){
+      // Side length 2 is treated as two unit magnets.
+      const units = Math.max(1, Math.round(edge.len / UNIT));
+      for(let i=0;i<units;i++){
+        const t0 = i / units;
+        const t1 = (i + 1) / units;
+        const a = { x: lerp(edge.a.x, edge.b.x, t0), y: lerp(edge.a.y, edge.b.y, t0) };
+        const b = { x: lerp(edge.a.x, edge.b.x, t1), y: lerp(edge.a.y, edge.b.y, t1) };
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy);
+        const ang = normAngle(radToDeg(Math.atan2(dy, dx)));
+        segments.push({ a, b, len, ang, mid: { x: (a.x+b.x)/2, y: (a.y+b.y)/2 } });
+      }
+    }
+
+    return segments;
+  }
+
+  function edgeSegmentsLocalByType(type, mX, mY){
+    const custom = snapEdgesLocalByType(type, mX, mY);
+    if(custom){
+      return custom.map(e=>{
+        const dx = e.b.x-e.a.x, dy = e.b.y-e.a.y;
+        const len = Math.hypot(dx, dy);
+        const ang = normAngle(radToDeg(Math.atan2(dy, dx)));
+        return { a: e.a, b: e.b, len, ang, ...(e.isArc?{isArc:true}:{}) };
+      });
+    }
+    const segments = [];
+    const pts = localPtsFor(type, mX, mY);
+
+    for(let i=0;i<pts.length;i++){
+      const edgeA = pts[i];
+      const edgeB = pts[(i+1)%pts.length];
+      const edgeLen = Math.hypot(edgeB.x - edgeA.x, edgeB.y - edgeA.y);
+      const units = Math.max(1, Math.round(edgeLen / UNIT));
+
+      for(let u=0;u<units;u++){
+        const t0 = u / units;
+        const t1 = (u + 1) / units;
+        const a = { x: lerp(edgeA.x, edgeB.x, t0), y: lerp(edgeA.y, edgeB.y, t0) };
+        const b = { x: lerp(edgeA.x, edgeB.x, t1), y: lerp(edgeA.y, edgeB.y, t1) };
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const len = Math.hypot(dx, dy);
+        const ang = normAngle(radToDeg(Math.atan2(dy, dx)));
+        segments.push({ a, b, len, ang });
+      }
+    }
+
+    return segments;
+  }
+
+  // ---------- Magnet snap (unit-segment based) ----------
+  function buildRotationCandidates(node, includeRotation, otherSegments){
+    if(!includeRotation) return [node.rotation()];
+
+    const type = node.getAttr("tileType");
+    const mX = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+    const mY = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+    const localSegments = edgeSegmentsLocalByType(type, mX, mY);
+    const seen = new Set();
+    const candidates = [];
+
+    const addRotation = (angle)=>{
+      const r = normAngle(angle);
+      const key = r.toFixed(4);
+      if(seen.has(key)) return;
+      seen.add(key);
+      candidates.push(r);
+    };
+
+    // Exact edge-to-edge alignment angles so all compatible sides can attract.
+    for(const localSeg of localSegments){
+      for(const otherSeg of otherSegments){
+        if(Math.abs(localSeg.len - otherSeg.len) > LEN_TOL) continue;
+        if(!!localSeg.isArc !== !!otherSeg.isArc) continue;
+        addRotation(normAngle(otherSeg.ang + 180) - localSeg.ang);
+        addRotation(normAngle(otherSeg.ang) - localSeg.ang);
+      }
+    }
+
+    addRotation(node.rotation());
+    return candidates;
+  }
+
+  function findBestMagnetSnap(movingNode, includeRotation, distThreshold){
+    if(!snapEdgesEl.checked) return null;
+
+    const originalRotation = movingNode.rotation();
+    const otherSegments = [];
     shapeLayer.getChildren().forEach((other)=>{
       if(other===movingNode) return;
-      const otherEdges = edgesWorld(other);
+      otherSegments.push(...edgeSegmentsWorld(other));
+    });
 
-      for(const e1 of myEdges){
-        for(const e2 of otherEdges){
+    const rotations = buildRotationCandidates(movingNode, includeRotation, otherSegments);
+    let best = null;
+
+    for(const rot of rotations){
+      movingNode.rotation(rot);
+      const mySegments = edgeSegmentsWorld(movingNode);
+
+      for(const e1 of mySegments){
+        for(const e2 of otherSegments){
           if(Math.abs(e1.len - e2.len) > LEN_TOL) continue;
+          if(!!e1.isArc !== !!e2.isArc) continue;
+          const isArcPair = !!e1.isArc && !!e2.isArc;
+          const pairDistThreshold = isArcPair ? Math.max(distThreshold * 3, ARC_SNAP_MIN_DIST) : distThreshold;
+          const pairAngleTol = isArcPair ? ARC_ANGLE_TOL_DEG : ANGLE_TOL_DEG;
 
-          const opp = normAngle(e2.ang + 180);
-          if(angleDiffDeg(e1.ang, opp) > ANGLE_TOL_DEG) continue;
+          const options = [
+            {
+              angTarget: normAngle(e2.ang + 180),
+              dx: e2.b.x - e1.a.x,
+              dy: e2.b.y - e1.a.y,
+              dA: dist(e1.a, e2.b),
+              dB: dist(e1.b, e2.a)
+            },
+            {
+              angTarget: normAngle(e2.ang),
+              dx: e2.a.x - e1.a.x,
+              dy: e2.a.y - e1.a.y,
+              dA: dist(e1.a, e2.a),
+              dB: dist(e1.b, e2.b)
+            }
+          ];
+          if(isArcPair){
+            options.push({
+              angTarget: normAngle(e2.ang + 180),
+              dx: e2.mid.x - e1.mid.x,
+              dy: e2.mid.y - e1.mid.y,
+              dA: dist(e1.mid, e2.mid),
+              dB: dist(e1.mid, e2.mid)
+            });
+          }
 
-          const dMid = dist(e1.mid, e2.mid);
-          if(dMid > EDGE_SNAP_DIST) continue;
+          for(const opt of options){
+            const angDiff = angleDiffDeg(e1.ang, opt.angTarget);
+            if(angDiff > pairAngleTol) continue;
 
-          const dA = dist(e1.a, e2.b);
-          const dB = dist(e1.b, e2.a);
-          const score = dA + dB;
+            const dMid = dist(e1.mid, e2.mid);
+            if(dMid > pairDistThreshold) continue;
 
-          if(!best || score < best.score){
-            const dx = e2.b.x - e1.a.x;
-            const dy = e2.b.y - e1.a.y;
-            best = { dx, dy, score };
+            const rotatePenalty = includeRotation ? angleDiffDeg(rot, originalRotation) * 0.15 : 0;
+            const score = opt.dA + opt.dB + dMid * 0.35 + rotatePenalty;
+
+            if(!best || score < best.score){
+              best = {
+                score,
+                rotation: rot,
+                dx: opt.dx,
+                dy: opt.dy
+              };
+            }
           }
         }
       }
+    }
+
+    movingNode.rotation(originalRotation);
+    return best;
+  }
+
+  function tryMagnetSnap(movingNode, includeRotation, distThreshold){
+    const best = findBestMagnetSnap(movingNode, includeRotation, distThreshold);
+    if(!best) return false;
+    movingNode.rotation(best.rotation);
+    movingNode.position({ x: movingNode.x()+best.dx, y: movingNode.y()+best.dy });
+    return true;
+  }
+
+  function tryGroupMagnetSnap(groupNodes, distThreshold){
+    if(!snapEdgesEl.checked || groupNodes.length === 0) return false;
+
+    const groupSet = new Set(groupNodes);
+    const mySegments = [];
+    const otherSegments = [];
+
+    groupNodes.forEach((n)=> mySegments.push(...edgeSegmentsWorld(n)));
+    shapeLayer.getChildren().forEach((n)=>{
+      if(groupSet.has(n)) return;
+      otherSegments.push(...edgeSegmentsWorld(n));
     });
 
-    if(best){
-      movingNode.position({ x: movingNode.x()+best.dx, y: movingNode.y()+best.dy });
-      return true;
+    let best = null;
+    for(const e1 of mySegments){
+      for(const e2 of otherSegments){
+        if(Math.abs(e1.len - e2.len) > LEN_TOL) continue;
+        if(!!e1.isArc !== !!e2.isArc) continue;
+        const isArcPair = !!e1.isArc && !!e2.isArc;
+        const pairDistThreshold = isArcPair ? Math.max(distThreshold * 3, ARC_SNAP_MIN_DIST) : distThreshold;
+        const pairAngleTol = isArcPair ? ARC_ANGLE_TOL_DEG : ANGLE_TOL_DEG;
+
+        const options = [
+          {
+            angTarget: normAngle(e2.ang + 180),
+            dx: e2.b.x - e1.a.x,
+            dy: e2.b.y - e1.a.y,
+            dA: dist(e1.a, e2.b),
+            dB: dist(e1.b, e2.a)
+          },
+          {
+            angTarget: normAngle(e2.ang),
+            dx: e2.a.x - e1.a.x,
+            dy: e2.a.y - e1.a.y,
+            dA: dist(e1.a, e2.a),
+            dB: dist(e1.b, e2.b)
+          }
+        ];
+        if(isArcPair){
+          options.push({
+            angTarget: normAngle(e2.ang + 180),
+            dx: e2.mid.x - e1.mid.x,
+            dy: e2.mid.y - e1.mid.y,
+            dA: dist(e1.mid, e2.mid),
+            dB: dist(e1.mid, e2.mid)
+          });
+        }
+
+        for(const opt of options){
+          if(angleDiffDeg(e1.ang, opt.angTarget) > pairAngleTol) continue;
+          const dMid = dist(e1.mid, e2.mid);
+          if(dMid > pairDistThreshold) continue;
+          const score = opt.dA + opt.dB + dMid * 0.35;
+
+          if(!best || score < best.score){
+            best = { score, dx: opt.dx, dy: opt.dy };
+          }
+        }
+      }
     }
-    return false;
+
+    if(!best) return false;
+    groupNodes.forEach((n)=> n.position({ x: n.x() + best.dx, y: n.y() + best.dy }));
+    return true;
   }
 
   // ---------- No overlap: SAT for convex polygons ----------
   function polyWorld(node) {
-    const pts = localPtsByType(node.getAttr("tileType"));
+    const mX = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+    const mY = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+    const pts = localPtsFor(node.getAttr("tileType"), mX, mY);
     return pts.map(p => transformPoint(p, node));
   }
   function dot(a,b){ return a.x*b.x + a.y*b.y; }
@@ -358,7 +975,7 @@
     }
     return {min, max};
   }
-  function overlap1D(a,b){ return !(a.max < b.min || b.max < a.min); }
+  function overlap1D(a,b){ return !(a.max <= b.min + OVERLAP_EPS || b.max <= a.min + OVERLAP_EPS); }
   function axesFor(poly){
     const axes = [];
     for (let i=0;i<poly.length;i++){
@@ -385,14 +1002,103 @@
     return false;
   }
 
+  function intersectsAnyExcluding(node, excludedSet){
+    const a = polyWorld(node);
+    const others = shapeLayer.getChildren().filter(n => n !== node && !excludedSet.has(n));
+    for (const o of others){
+      const b = polyWorld(o);
+      if (polysIntersectSAT(a,b)) return true;
+    }
+    return false;
+  }
+
   function rememberGood(node){
-    node._lastGood = { x: node.x(), y: node.y(), rotation: node.rotation() };
+    node._lastGood = { x: node.x(), y: node.y(), rotation: node.rotation(),
+      mX: node.getAttr("tileMirrorX") === -1 ? -1 : 1,
+      mY: node.getAttr("tileMirrorY") === -1 ? -1 : 1 };
   }
   function revertToGood(node){
     if(node._lastGood){
       node.position({ x: node._lastGood.x, y: node._lastGood.y });
       node.rotation(node._lastGood.rotation);
+      if(node._lastGood.mX !== undefined){
+        node.setAttr("tileMirrorX", node._lastGood.mX);
+        node.setAttr("tileMirrorY", node._lastGood.mY);
+        setNodePointsFromAttrs(node);
+      }
     }
+  }
+
+  function sceneState(){
+    return shapeLayer.getChildren().map((node)=>(
+      {
+        id: node.getAttr("tileId"),
+        type: node.getAttr("tileType"),
+        fill: node.getAttr("tileFill") || node.fill(),
+        x: node.x(),
+        y: node.y(),
+        rotation: node.rotation(),
+        mirrorX: node.getAttr("tileMirrorX") === -1 ? -1 : 1,
+        mirrorY: node.getAttr("tileMirrorY") === -1 ? -1 : 1
+      }
+    ));
+  }
+
+  function updateUndoRedoButtons(){
+    undoBtn.disabled = historyIndex <= 0;
+    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+  }
+
+  function pushHistorySnapshot(){
+    if(applyingHistory) return;
+    const state = sceneState();
+    const last = historyStack[historyIndex];
+    if(last && JSON.stringify(last) === JSON.stringify(state)){
+      updateUndoRedoButtons();
+      return;
+    }
+
+    historyStack = historyStack.slice(0, historyIndex + 1);
+    historyStack.push(state);
+    historyIndex = historyStack.length - 1;
+    updateUndoRedoButtons();
+  }
+
+  function applySceneState(state){
+    applyingHistory = true;
+    // Detach transformer BEFORE destroying nodes to avoid stale references.
+    transformer.nodes([]);
+    selectedNodes = [];
+    shapeLayer.destroyChildren();
+
+    let maxId = 0;
+    state.forEach((tile)=>{
+      const node = makeTile(tile.type, tile.fill, tile.mirrorX || 1, tile.mirrorY || 1);
+      node.setAttr("tileId", tile.id);
+      node.position({ x: tile.x, y: tile.y });
+      node.rotation(tile.rotation);
+      shapeLayer.add(node);
+      rememberGood(node);
+      if(tile.id > maxId) maxId = tile.id;
+    });
+
+    nextTileId = Math.max(maxId + 1, 1);
+    stage.batchDraw();
+    applyingHistory = false;
+  }
+
+  function undo(){
+    if(historyIndex <= 0) return;
+    historyIndex -= 1;
+    applySceneState(historyStack[historyIndex]);
+    updateUndoRedoButtons();
+  }
+
+  function redo(){
+    if(historyIndex >= historyStack.length - 1) return;
+    historyIndex += 1;
+    applySceneState(historyStack[historyIndex]);
+    updateUndoRedoButtons();
   }
 
   // ---------- Tile factory ----------
@@ -407,19 +1113,120 @@
     });
   }
 
-  function makeTile(type, fill){
-    const pts = localPtsByType(type);
+  function setNodePointsFromAttrs(node){
+    const type = node.getAttr("tileType");
+    const mX = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+    const mY = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+    const pts = localPtsFor(type, mX, mY);
+    node.points(pts.flatMap((p)=>[p.x, p.y]));
+  }
+
+  function makeTile(type, fill, mirrorX, mirrorY){
+    const mX = mirrorX === -1 ? -1 : 1;
+    const mY = mirrorY === -1 ? -1 : 1;
+    const pts = localPtsFor(type, mX, mY);
     const node = makePoly(pts, fill);
     node.setAttr("tileType", type);
     node.setAttr("tileFill", fill);
+    node.setAttr("tileMirrorX", mX);
+    node.setAttr("tileMirrorY", mY);
     node.draggable(true);
 
-    node.on("mousedown touchstart", (e)=>{ e.cancelBubble=true; select(node); });
+    node.on("mousedown touchstart", (e)=>{
+      e.cancelBubble = true;
+      const withToggle = !!(e.evt && e.evt.shiftKey);
+      if(withToggle){
+        toggleSelection(node);
+      } else if(!selectedNodes.includes(node)){
+        setSelection([node]);
+      }
+    });
 
-    node.on("dragmove", ()=>{ /* no grid snap during drag */ });
+    node.on("dragstart", ()=>{
+      if(!selectedNodes.includes(node)) setSelection([node]);
+
+      const group = selectedNodes.includes(node) && selectedNodes.length > 1
+        ? selectedNodes.slice()
+        : [node];
+
+      if(group.length > 1){
+        node._multiDragData = group.map(n => ({ node: n, x: n.x(), y: n.y(), rotation: n.rotation() }));
+        // Disable drag on followers so only the primary node drives movement
+        for(const n of group) if(n !== node) n.draggable(false);
+      } else {
+        node._multiDragData = null;
+      }
+    });
+
+    node.on("dragmove", ()=>{
+      if(node._multiDragData){
+        const selfStart = node._multiDragData.find(d => d.node === node);
+        if(!selfStart) return;
+        const dx = node.x() - selfStart.x;
+        const dy = node.y() - selfStart.y;
+
+        for(const item of node._multiDragData){
+          if(item.node === node) continue;
+          item.node.position({ x: item.x + dx, y: item.y + dy });
+        }
+
+        shapeLayer.draw();
+        return;
+      }
+
+      if(snapLiveEl.checked){
+        const before = { x: node.x(), y: node.y(), rotation: node.rotation() };
+        const snapped = tryMagnetSnap(node, true, MAGNET_ATTRACT_DIST);
+        if(snapped && intersectsAny(node)){
+          node.position({ x: before.x, y: before.y });
+          node.rotation(before.rotation);
+        }
+      }
+      shapeLayer.draw();
+    });
 
     node.on("dragend", ()=>{
-      const snapped = tryEdgeSnap(node);
+      if(node._multiDragData){
+        const dragged = node._multiDragData.map(d => d.node);
+        const draggedSet = new Set(dragged);
+        // Restore draggable on all followers
+        for(const n of dragged) if(n !== node) n.draggable(true);
+
+        // Capture drag-end positions, try small external snap
+        const endPos = node._multiDragData.map(d => ({ node: d.node, x: d.node.x(), y: d.node.y() }));
+        tryGroupMagnetSnap(dragged, EDGE_SNAP_DIST);
+
+        // Check intersection with external (non-group) shapes after snap
+        let blocked = false;
+        for(const item of node._multiDragData){
+          if(intersectsAnyExcluding(item.node, draggedSet)){ blocked = true; break; }
+        }
+
+        if(blocked){
+          // Undo snap, restore drag-end positions
+          endPos.forEach(p => p.node.position({ x: p.x, y: p.y }));
+          // Re-check at pure drag-end position
+          let stillBlocked = false;
+          for(const item of node._multiDragData){
+            if(intersectsAnyExcluding(item.node, draggedSet)){ stillBlocked = true; break; }
+          }
+          if(stillBlocked){
+            // Revert entirely to drag-start
+            for(const item of node._multiDragData){
+              item.node.position({ x: item.x, y: item.y });
+              item.node.rotation(item.rotation);
+            }
+          }
+        }
+
+        for(const moved of dragged) rememberGood(moved);
+        node._multiDragData = null;
+        shapeLayer.draw();
+        pushHistorySnapshot();
+        return;
+      }
+
+      const snapped = tryMagnetSnap(node, true, EDGE_SNAP_DIST);
 
       if(snapGridEl.checked && !snapped){
         const p = snapToGrid({x: node.x(), y: node.y()});
@@ -433,72 +1240,460 @@
       }
 
       shapeLayer.draw();
+      pushHistorySnapshot();
     });
 
     return node;
   }
 
-  function addTile(type){
-    if(!palette.includes(activeColor)){
-      if(!addOrUseColor(activeColor)) return;
+  function defaultColorForType(type){
+    const mapped = TYPE_DEFAULT_COLORS[type] || palette[0] || activeColor;
+    if(!palette.includes(mapped)){
+      palette.push(mapped);
+      renderPalette();
     }
-    const node = makeTile(type, activeColor);
-    node.position({ x: stage.width()/2, y: stage.height()/2 });
+    return mapped;
+  }
+
+  function addTile(type, pos){
+    const node = makeTile(type, defaultColorForType(type));
+    node.setAttr("tileId", nextTileId++);
+    const targetPos = pos || {
+      x: (stage.width()/2  - stage.x()) / zoomScale,
+      y: (stage.height()/2 - stage.y()) / zoomScale
+    };
+    node.position(targetPos);
 
     if(type === "hex") node.rotation(30);
     else node.rotation(0);
 
     shapeLayer.add(node);
     shapeLayer.draw();
-    select(node);
+    setSelection([node]);
     rememberGood(node);
+    pushHistorySnapshot();
   }
 
-  // Buttons
-  document.getElementById("addSquareBtn").onclick = ()=>addTile("square");
-  document.getElementById("addRectBtn").onclick   = ()=>addTile("rect");
-  document.getElementById("addHexBtn").onclick    = ()=>addTile("hex");
-  document.getElementById("addTri60Btn").onclick  = ()=>addTile("tri60");
-  document.getElementById("addTri45Btn").onclick  = ()=>addTile("tri45");
-  document.getElementById("addTri30Btn").onclick  = ()=>addTile("tri30");
+  // Buttons: single click adds at center; drag-drop adds at pointer location.
+  const SHAPE_BUTTONS = [
+    ["addSquareBtn", "square"],
+    ["addRectBtn", "rect"],
+    ["addHexBtn", "hex"],
+    ["addTri60Btn", "tri60"],
+    ["addTri45Btn", "tri45"],
+    ["addTri30Btn", "tri30"],
+    ["addTri306090Btn", "tri306090"],
+    ["addTriISOBtn", "triISO"],
+    ["addQuartRoundBtn", "quartRound"],
+    ["addQuartRingBtn", "quartRing"]
+  ];
+  const DRAGGABLE_SHAPES = new Set(SHAPE_BUTTONS.map(([, type]) => type));
+  let shapeDragInProgress = false;
+  let draggingShapeType = null;
+  let dragPreviewNode = null;
+  let dragPreviewType = null;
+  const HIDDEN_DRAG_IMAGE = (()=>{
+    const c = document.createElement("canvas");
+    c.width = 1; c.height = 1;
+    return c;
+  })();
+
+  function pointerToStagePos(evt){
+    stage.setPointersPositions(evt);
+    const pointer = stage.getPointerPosition();
+    if(!pointer) return null;
+    const inv = stage.getAbsoluteTransform().copy();
+    inv.invert();
+    return inv.point(pointer);
+  }
+
+  function clearDragPreview(){
+    if(!dragPreviewNode) return;
+    dragPreviewNode.destroy();
+    dragPreviewNode = null;
+    dragPreviewType = null;
+    shapeLayer.batchDraw();
+  }
+
+  function ensureDragPreview(type){
+    if(dragPreviewNode && dragPreviewType === type) return dragPreviewNode;
+    clearDragPreview();
+    dragPreviewNode = makeTile(type, defaultColorForType(type));
+    dragPreviewNode.setAttr("tileId", "preview");
+    dragPreviewNode.draggable(false);
+    dragPreviewNode.listening(false);
+    dragPreviewNode.opacity(0.88);
+    if(type === "hex") dragPreviewNode.rotation(30);
+    else dragPreviewNode.rotation(0);
+    shapeLayer.add(dragPreviewNode);
+    dragPreviewType = type;
+    return dragPreviewNode;
+  }
+
+  function updateDragPreviewAt(type, pos){
+    const preview = ensureDragPreview(type);
+    preview.position(pos);
+    const before = { x: preview.x(), y: preview.y(), rotation: preview.rotation() };
+    const snapped = tryMagnetSnap(preview, true, MAGNET_ATTRACT_DIST);
+    if(snapped && intersectsAny(preview)){
+      preview.position({ x: before.x, y: before.y });
+      preview.rotation(before.rotation);
+    }
+    shapeLayer.batchDraw();
+  }
+
+  function finalizeDragPreview(){
+    if(!dragPreviewNode) return;
+    const node = dragPreviewNode;
+    dragPreviewNode = null;
+    dragPreviewType = null;
+
+    node.opacity(1);
+    node.listening(true);
+    node.draggable(true);
+    node.setAttr("tileId", nextTileId++);
+
+    const snapped = tryMagnetSnap(node, true, EDGE_SNAP_DIST);
+    if(snapGridEl.checked && !snapped){
+      const p = snapToGrid({ x: node.x(), y: node.y() });
+      node.position(p);
+    }
+
+    if(intersectsAny(node)){
+      node.destroy();
+      shapeLayer.batchDraw();
+      return;
+    }
+
+    setSelection([node]);
+    rememberGood(node);
+    shapeLayer.batchDraw();
+    pushHistorySnapshot();
+  }
+
+  SHAPE_BUTTONS.forEach(([id, type])=>{
+    const btn = document.getElementById(id);
+    btn.onclick = ()=>{
+      if(shapeDragInProgress){
+        shapeDragInProgress = false;
+        return;
+      }
+      addTile(type);
+    };
+    btn.setAttribute("draggable", "true");
+    btn.addEventListener("dragstart", (e)=>{
+      shapeDragInProgress = true;
+      draggingShapeType = type;
+      clearDragPreview();
+      e.dataTransfer.setData("text/plain", type);
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.setDragImage(HIDDEN_DRAG_IMAGE, 0, 0);
+    });
+    btn.addEventListener("dragend", ()=>{
+      clearDragPreview();
+      draggingShapeType = null;
+      setTimeout(()=>{ shapeDragInProgress = false; }, 0);
+    });
+  });
+
+  container.addEventListener("dragover", (e)=>{
+    const types = e.dataTransfer && e.dataTransfer.types;
+    if(!types || !types.includes("text/plain")) return;
+    const type = e.dataTransfer.getData("text/plain") || draggingShapeType;
+    if(!DRAGGABLE_SHAPES.has(type)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    const pos = pointerToStagePos(e);
+    if(pos) updateDragPreviewAt(type, pos);
+  });
+
+  container.addEventListener("dragleave", (e)=>{
+    const rect = container.getBoundingClientRect();
+    const outside = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+    if(outside) clearDragPreview();
+  });
+
+  container.addEventListener("drop", (e)=>{
+    const type = (e.dataTransfer && e.dataTransfer.getData("text/plain")) || draggingShapeType;
+    if(!type || !DRAGGABLE_SHAPES.has(type)) return;
+    e.preventDefault();
+    if(dragPreviewNode) {
+      finalizeDragPreview();
+    } else {
+      const dropPos = pointerToStagePos(e);
+      if(dropPos) addTile(type, dropPos);
+    }
+    draggingShapeType = null;
+    shapeDragInProgress = false;
+  });
 
   applyColorBtn.onclick = ()=>{
-    if(!selected) return;
+    if(selectedNodes.length===0 || !activeColor) return;
     if(!palette.includes(activeColor)){
       if(!addOrUseColor(activeColor)) return;
     }
-    selected.fill(activeColor);
-    selected.setAttr("tileFill", activeColor);
+    selectedNodes.forEach((node)=>{
+      node.fill(activeColor);
+      node.setAttr("tileFill", activeColor);
+    });
     shapeLayer.draw();
+    pushHistorySnapshot();
   };
 
   function rotateSelected(dir){
-    if(!selected) return;
-    const type = selected.getAttr("tileType");
-    const step = rotationStepByType(type);
-    selected.rotation(snapAngle(selected.rotation() + dir*step, step));
+    if(selectedNodes.length === 0) return;
 
-    tryEdgeSnap(selected);
-    if(intersectsAny(selected)) revertToGood(selected);
-    else rememberGood(selected);
+    if(selectedNodes.length === 1){
+      const selected = selectedNodes[0];
+      const type = selected.getAttr("tileType");
+      const step = rotationStepByType(type);
+      selected.rotation(snapAngle(selected.rotation() + dir*step, step));
+
+      tryMagnetSnap(selected, true, EDGE_SNAP_DIST);
+      if(intersectsAny(selected)) revertToGood(selected);
+      else rememberGood(selected);
+
+      shapeLayer.draw();
+      pushHistorySnapshot();
+      return;
+    }
+
+    const group = selectedNodes.slice();
+    const groupSet = new Set(group);
+    const before = group.map((n)=>({ node:n, x:n.x(), y:n.y(), rotation:n.rotation() }));
+
+    const bounds = group.map((n)=>n.getClientRect({ skipStroke: true }));
+    const minX = Math.min(...bounds.map(b=>b.x));
+    const minY = Math.min(...bounds.map(b=>b.y));
+    const maxX = Math.max(...bounds.map(b=>b.x + b.width));
+    const maxY = Math.max(...bounds.map(b=>b.y + b.height));
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+
+    const delta = degToRad(dir * GROUP_ROTATE_STEP);
+    const cos = Math.cos(delta), sin = Math.sin(delta);
+
+    for(const item of before){
+      const dx = item.x - cx;
+      const dy = item.y - cy;
+      item.node.position({
+        x: cx + dx * cos - dy * sin,
+        y: cy + dx * sin + dy * cos
+      });
+      item.node.rotation(normAngle(item.rotation + dir * GROUP_ROTATE_STEP));
+    }
+
+    let blocked = false;
+    for(const n of group){
+      if(intersectsAnyExcluding(n, groupSet)){
+        blocked = true;
+        break;
+      }
+    }
+
+    if(blocked){
+      for(const item of before){
+        item.node.position({ x: item.x, y: item.y });
+        item.node.rotation(item.rotation);
+      }
+    } else {
+      for(const n of group) rememberGood(n);
+      pushHistorySnapshot();
+    }
 
     shapeLayer.draw();
+  }
+
+  function closestAttractedEdgeMid(node){
+    const myEdges = edgesWorld(node);
+    let bestDist = Infinity, bestMid = null;
+    shapeLayer.getChildren().forEach((other)=>{
+      if(other === node) return;
+      edgesWorld(other).forEach((e2)=>{
+        myEdges.forEach((e1)=>{
+          const d = Math.hypot(e1.mid.x - e2.mid.x, e1.mid.y - e2.mid.y);
+          if(d < bestDist){ bestDist = d; bestMid = { x: e1.mid.x, y: e1.mid.y }; }
+        });
+      });
+    });
+    return bestMid;
+  }
+
+  function applyMirrorToNode(node, axis){
+    const rot = node.rotation() * Math.PI / 180;
+    const cos = Math.cos(rot), sin = Math.sin(rot);
+    const nx = node.x(), ny = node.y();
+    const anchor = closestAttractedEdgeMid(node) || { x: nx, y: ny };
+    const dax = anchor.x - nx, day = anchor.y - ny;
+    const lax = dax * cos + day * sin;
+    const lay = -dax * sin + day * cos;
+    const newLax = axis === "x" ? -lax : lax;
+    const newLay = axis === "y" ? -lay : lay;
+    if(axis === "x"){
+      const cur = node.getAttr("tileMirrorX") === -1 ? -1 : 1;
+      node.setAttr("tileMirrorX", -cur);
+    } else {
+      const cur = node.getAttr("tileMirrorY") === -1 ? -1 : 1;
+      node.setAttr("tileMirrorY", -cur);
+    }
+    setNodePointsFromAttrs(node);
+    const newAnchorX = newLax * cos - newLay * sin + nx;
+    const newAnchorY = newLax * sin + newLay * cos + ny;
+    node.position({ x: nx + (anchor.x - newAnchorX), y: ny + (anchor.y - newAnchorY) });
+  }
+
+  function assembleAll(){
+    const nodes = shapeLayer.getChildren().slice();
+    if(nodes.length < 2) return;
+    let changed = true;
+    let passes = 0;
+    while(changed && passes < 30){
+      changed = false;
+      passes++;
+      for(const node of nodes){
+        const pre = { x: node.x(), y: node.y(), rotation: node.rotation() };
+        const snapped = tryMagnetSnap(node, true, MAGNET_ATTRACT_DIST * 4);
+        if(snapped){
+          if(intersectsAny(node)){
+            node.position({ x: pre.x, y: pre.y });
+            node.rotation(pre.rotation);
+          } else {
+            rememberGood(node);
+            changed = true;
+          }
+        }
+      }
+    }
+    shapeLayer.draw();
+    pushHistorySnapshot();
+  }
+
+  function mirrorAxisSelected(axis){
+    if(selectedNodes.length === 0) return;
+    const before = selectedNodes.map(n => ({
+      node: n,
+      x: n.x(), y: n.y(),
+      rotation: n.rotation(),
+      mX: n.getAttr("tileMirrorX") === -1 ? -1 : 1,
+      mY: n.getAttr("tileMirrorY") === -1 ? -1 : 1
+    }));
+
+    // Mirror entire selection as a rigid group around its centre.
+    // Identity: FlipX * R(θ) = R(−θ) * FlipX  →  newRotation = −rotation.
+    const cx = before.reduce((s, b) => s + b.x, 0) / before.length;
+    const cy = before.reduce((s, b) => s + b.y, 0) / before.length;
+
+    for(const b of before){
+      const n = b.node;
+      if(axis === "x"){
+        n.position({ x: 2 * cx - b.x, y: b.y });
+        n.rotation(normAngle(-b.rotation));
+        n.setAttr("tileMirrorX", -b.mX);
+        n.setAttr("tileMirrorY",  b.mY);
+      } else {
+        n.position({ x: b.x, y: 2 * cy - b.y });
+        n.rotation(normAngle(-b.rotation));
+        n.setAttr("tileMirrorX",  b.mX);
+        n.setAttr("tileMirrorY", -b.mY);
+      }
+      setNodePointsFromAttrs(n);
+    }
+
+    const selectedSet = new Set(selectedNodes);
+    let blocked = false;
+    for(const n of selectedNodes){
+      if(intersectsAnyExcluding(n, selectedSet)){ blocked = true; break; }
+    }
+    if(blocked){
+      for(const b of before){
+        b.node.position({ x: b.x, y: b.y });
+        b.node.rotation(b.rotation);
+        b.node.setAttr("tileMirrorX", b.mX);
+        b.node.setAttr("tileMirrorY", b.mY);
+        setNodePointsFromAttrs(b.node);
+      }
+    } else {
+      selectedNodes.forEach(n => rememberGood(n));
+      pushHistorySnapshot();
+    }
+    shapeLayer.draw();
+  }
+
+  function copySelected(){
+    if(selectedNodes.length === 0) return;
+    const OFFSET = UNIT * 0.3;
+    const copies = selectedNodes.map(n => {
+      const type = n.getAttr("tileType");
+      const fill = n.getAttr("tileFill") || n.fill();
+      const mX = n.getAttr("tileMirrorX") === -1 ? -1 : 1;
+      const mY = n.getAttr("tileMirrorY") === -1 ? -1 : 1;
+      const copy = makeTile(type, fill, mX, mY);
+      copy.setAttr("tileId", nextTileId++);
+      copy.position({ x: n.x() + OFFSET, y: n.y() + OFFSET });
+      copy.rotation(n.rotation());
+      shapeLayer.add(copy);
+      rememberGood(copy);
+      return copy;
+    });
+    setSelection(copies);
+    shapeLayer.draw();
+    pushHistorySnapshot();
   }
 
   document.getElementById("rotateLeftBtn").onclick = ()=>rotateSelected(-1);
   document.getElementById("rotateRightBtn").onclick= ()=>rotateSelected(1);
+  mirrorHBtn.onclick = ()=>mirrorAxisSelected("x");
+  mirrorVBtn.onclick = ()=>mirrorAxisSelected("y");
+  copyBtn.onclick = ()=>copySelected();
 
   document.getElementById("deleteBtn").onclick = ()=>{
-    if(!selected) return;
-    selected.destroy();
-    select(null);
+    if(selectedNodes.length===0) return;
+    selectedNodes.forEach(n => n.destroy());
+    clearSelection();
     shapeLayer.draw();
+    pushHistorySnapshot();
   };
 
   window.addEventListener("keydown",(e)=>{
-    if(e.key==="Escape") select(null);
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="z"){
+      e.preventDefault();
+      if(e.shiftKey) redo();
+      else undo();
+      return;
+    }
+
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="y"){
+      e.preventDefault();
+      redo();
+      return;
+    }
+
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==="d"){
+      e.preventDefault();
+      copySelected();
+      return;
+    }
+
+    if(e.key==="/"){
+      e.preventDefault();
+      rotateSelected(1);
+      return;
+    }
+
+    if(e.key.toLowerCase()==="h"){
+      e.preventDefault();
+      mirrorAxisSelected("x");
+      return;
+    }
+    if(e.key.toLowerCase()==="v"){
+      e.preventDefault();
+      mirrorAxisSelected("y");
+      return;
+    }
+
+    if(e.key==="Escape"){ clearSelection(); if(angleMeasureMode) exitAngleMeasure(); }
     if(e.key==="Delete"||e.key==="Backspace"){
-      if(selected){ selected.destroy(); select(null); shapeLayer.draw(); }
+      if(selectedNodes.length){ selectedNodes.forEach(n => n.destroy()); clearSelection(); shapeLayer.draw(); pushHistorySnapshot(); }
     }
     if(e.key==="[") rotateSelected(-1);
     if(e.key==="]") rotateSelected(1);
@@ -506,9 +1701,14 @@
 
   document.getElementById("clearBtn").onclick = ()=>{
     shapeLayer.destroyChildren();
-    select(null);
+    clearSelection();
     shapeLayer.draw();
+    pushHistorySnapshot();
   };
+
+  assembleBtn.onclick = ()=>assembleAll();
+  undoBtn.onclick = ()=>undo();
+  redoBtn.onclick = ()=>redo();
 
   function downloadText(filename, text){
     const blob = new Blob([text], {type:"image/svg+xml;charset=utf-8"});
@@ -532,6 +1732,7 @@
 
   renderPalette();
   resizeStage();
+  pushHistorySnapshot();
 </script>
 </body>
 </html>
